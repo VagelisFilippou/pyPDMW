@@ -28,9 +28,9 @@ import numpy as np
 import time
 from derive_geometry import DerivedGeometry
 from read_crm_data_incl import RibsInclined
-from Spar_and_Spar_Caps_Coords import SparsAndCapsCoords
-from Store_Spar_IDs import SparsCapsIDs
-from Connection_Nodes import ConnectionNodes
+from spar_and_spar_caps_coords import SparsAndCapsCoords
+from store_spar_ids import SparsCapsIDs
+from connection_nodes import ConnectionNodes
 from run_arg import run_argument
 from delete_files import delete_files
 
@@ -413,7 +413,7 @@ with open('Wing_Geometry_Generation.tcl', 'w') as f:
             surfacecounter += 1
             Surface_RSC_Rib[i, j] = surfacecounter
         f.write('*createentity comps name="Rib_RSC_%.0f"\n'
-                    % (i + 1))
+                % (i + 1))
         # f.write("*drawlistresetstyle\n")
         f.write('*startnotehistorystate {Moved surfaces into component "Rib_RSC_%.0f"}\n' % (i + 1))
         f.write('*createmark surfaces 1 %.0f-%.0f\n'
@@ -445,7 +445,7 @@ with open('Wing_Geometry_Generation.tcl', 'w') as f:
             surfacecounter += 1
             Surface_Rib[i, j] = surfacecounter
         f.write('*createentity comps name="Rib_Main_%.0f"\n'
-                    % (i + 1))
+                % (i + 1))
         # f.write("*drawlistresetstyle\n")
         f.write('*startnotehistorystate {Moved surfaces into component "Rib_Main_%.0f"}\n' % (i + 1))
         f.write('*createmark surfaces 1 %.0f-%.0f\n'
@@ -861,7 +861,6 @@ with open('Wing_Geometry_Generation.tcl', 'w') as f:
     f.write('*setvalue assems id=14 components={comps %.0f-%.0f}'
             % (Component_Spar_Cap_Lower_Right[0, 0], Component_Spar_Cap_Lower_Right[-1, 0]))
     f.write('\n*endnotehistorystate {Modified Components of assembly}\n')
-
 
     # Clear all nodes
     f.write("*nodecleartempmark\n")
