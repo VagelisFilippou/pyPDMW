@@ -873,9 +873,9 @@ with open('Wing_Geometry_Generation.tcl', 'w') as f:
     # f.write('\n*multi_surfs_lines_merge 1 0 0\n*normalsoff\n')
     # Save the file and close
     f.write("*writefile \"C:/Users/efilippo/Documents/"
-            "ASD_Lab_Parametric_Design_of_Wing/HM_Files/wing.hm\" 1\n")
+            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
     # f.write("*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-    #         "ASD_Lab_Parametric_Design_of_Wing/HM_Files/wing.hm\" 1\n")
+    #         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
     f.write("return; # Stop script and return to application\n*quit 1;\n")
 f.close()
 
@@ -886,7 +886,7 @@ f.close()
 
 # Location of .tcl script and run
 TCLScript = "/ASD_Lab_Parametric_Design_of_Wing/Wing_Geometry_Generation.tcl"
-# run_argument(TCLScript)
+run_argument(TCLScript)
 
 # End time counter
 toc = time.perf_counter()
