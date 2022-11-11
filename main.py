@@ -885,7 +885,7 @@ f.close()
 """
 
 # Location of .tcl script and run
-TCLScript = "/ASD_Lab_Parametric_Design_of_Wing/Wing_Geometry_Generation.tcl"
+TCLScript = "/ASD_Lab_Parametric_Design_of_Wing_OOP/Wing_Geometry_Generation.tcl"
 run_argument(TCLScript)
 
 # End time counter
