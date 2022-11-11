@@ -25,7 +25,7 @@ def delete_file(file_path):
 
 def delete_files():
     """
-    It's a function that deletes some specified files that aint useful.
+    It's a function that deletes some specified files that ain't useful.
 
     Returns
     -------

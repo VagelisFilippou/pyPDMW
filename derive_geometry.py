@@ -9,7 +9,7 @@ from read_oml import read_oml
 
 
 class DerivedGeometry:
-    """Class for geometric parametrs of the wing ribs' coords."""
+    """Class for geometric parameters of the wing ribs' coords."""
 
     def __init__(self,
                  SemiSpan,

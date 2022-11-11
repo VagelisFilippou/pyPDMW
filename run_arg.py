@@ -4,7 +4,7 @@ import subprocess
 import os.path
 
 
-def checkpath():
+def check_path():
     """
     It's a function that checks the existing path and returns desired paths.
 
@@ -31,13 +31,13 @@ def checkpath():
     return path, hm_loc, hm_batch
 
 
-def run_argument(TCLScript):
+def run_argument(tcl_script):
     """
     It's a function that constructs the argument to run the tcl script.
 
     Parameters
     ----------
-    TCLScript : TYPE
+    tcl_script : TYPE
         DESCRIPTION.
 
     Returns
@@ -45,7 +45,7 @@ def run_argument(TCLScript):
     None.
 
     """
-    path, hm_loc, hm_batch = checkpath()
-    TCLScript = path + TCLScript
-    arg = hm_batch + " -tcl " + TCLScript
+    path, hm_loc, hm_batch = check_path()
+    tcl_script = path + tcl_script
+    arg = hm_batch + " -tcl " + tcl_script
     subprocess.call(arg)

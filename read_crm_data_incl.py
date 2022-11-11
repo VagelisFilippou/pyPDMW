@@ -167,7 +167,7 @@ class RibsInclined:
 
     def interpolate(self):
         """
-        It's the method that actualy does the interpolation given the Y vector.
+        It's the method that actually does the interpolation given the Y vector.
 
         Returns
         -------
@@ -186,7 +186,7 @@ class RibsInclined:
         self.chords = numpy.zeros((1, self.n))
         self.twist = numpy.zeros((1, self.n))
 
-        # Linear interpolation to find the coordinates at the deisred Y
+        # Linear interpolation to find the coordinates at the desired Y
         for j in range(0, self.n):
             self.chords[0, j] = numpy.interp(y_[0, j], Wing.y[0, :],
                                              Wing.chord[0, :])
@@ -227,7 +227,7 @@ class RibsInclined:
         TE_x = numpy.zeros((21, 1))
         TE_y = numpy.zeros((21, 1))
 
-        # Set the coordinates of the non rotated rib line
+        # Set the coordinates of the non-rotated rib line
         for i in range(0, self.n):
             for j in range(0, 2):
                 if j == 0:
@@ -285,7 +285,7 @@ class RibsInclined:
         Z_upper = numpy.zeros((self.n, n_points))
         Z_lower = numpy.zeros((self.n, n_points))
 
-        # Use linear interpolation to find the coordinates of the linspaced x
+        # Use linear interpolation to find the coordinates of the lin-spaced x
         for i in range(0, self.n):
             x = [Rib_x[i, 0], Rib_x[i, 1]]
             y = [Rib_y[i, 0], Rib_y[i, 1]]
@@ -297,7 +297,7 @@ class RibsInclined:
         X = numpy.concatenate(X)
         Y = numpy.concatenate(Y)
 
-        # Concatanate the known coordinates in upper and lower arrays
+        # Concatenate the known coordinates in upper and lower arrays
         x_upper = numpy.concatenate(x_[0:119, :])
         y_upper = numpy.concatenate(y_[0:119, :])
         z_upper = numpy.concatenate(z_[0:119, :])

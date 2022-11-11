@@ -22,7 +22,7 @@ def read_oml():
     airfoil_path = 'Resources/uCRM_9/uCRM_9_Coord.txt'  # Must have!!!!
 
     with open(airfoil_path, 'r') as infile:
-        ignore, id_x, id_y, id_z = numpy.loadtxt(infile, unpack=True)
+        _, id_x, id_y, id_z = numpy.loadtxt(infile, unpack=True)
 
     # Distinguish the LE and TE coordinates
     front = numpy.dstack((id_x, id_y, id_z)).squeeze()[0:21, :]

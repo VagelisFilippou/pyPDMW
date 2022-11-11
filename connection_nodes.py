@@ -43,7 +43,6 @@ class ConnectionNodes:
                                                         Spar_Cap_ID_Lower_Right[i, :]]
                                                         )))
 
-
         Curve_IDs_Upper = np.insert(Curve_IDs_Upper, 3 * N_spars, TE_IDs_u[:, 0],
                                     axis=1)
         Curve_IDs_Upper = np.insert(Curve_IDs_Upper, 0, LE_IDs[:, 0], axis=1)
