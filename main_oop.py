@@ -364,9 +364,9 @@ Surfaces_Lower_Right_Spar_Cap =\
         Curve_Lower_Spar.curves,
         Curve_Lower_Rib.sections_id.SC_R,
         Curve_Lower_Rib.sections_id.SC_R,
-        Surfaces_Upper_Left_Spar_Cap.surfacecounter,
-        Surfaces_Upper_Left_Spar_Cap.componentcounter,
-        Surfaces_Upper_Left_Spar_Cap.assemblycounter,
+        Surfaces_Upper_Right_Spar_Cap.surfacecounter,
+        Surfaces_Upper_Right_Spar_Cap.componentcounter,
+        Surfaces_Upper_Right_Spar_Cap.assemblycounter,
         'Lower_Right_Spar_Cap')
 
 Surfaces_Lower_Left_Spar_Cap =\
@@ -377,9 +377,9 @@ Surfaces_Lower_Left_Spar_Cap =\
         Curve_Lower_Spar.curves,
         Curve_Lower_Rib.sections_id.SC_L,
         Curve_Lower_Rib.sections_id.SC_L,
-        Surfaces_Upper_Left_Spar_Cap.surfacecounter,
-        Surfaces_Upper_Left_Spar_Cap.componentcounter,
-        Surfaces_Upper_Left_Spar_Cap.assemblycounter,
+        Surfaces_Lower_Right_Spar_Cap.surfacecounter,
+        Surfaces_Lower_Right_Spar_Cap.componentcounter,
+        Surfaces_Lower_Right_Spar_Cap.assemblycounter,
         'Lower_Left_Spar_Cap')
 
 Surfaces_Front_Upper_Skin =\
@@ -447,10 +447,12 @@ Surfaces_Rear_Rib =\
         Curve_Lower_Rib.sections_id.TE,
         Curve_Upper_Rib.sections_id.TE,
         Curve_Right_Spar_Cap_In_Ribs.curves,
-        Surfaces_Rear_Lower_Skin.surfacecounter,
-        Surfaces_Rear_Lower_Skin.componentcounter,
-        Surfaces_Rear_Lower_Skin.assemblycounter,
+        Surfaces_Front_Rib.surfacecounter,
+        Surfaces_Front_Rib.componentcounter,
+        Surfaces_Front_Rib.assemblycounter,
         'Rear_Rib')
+
+SURFACE_COUNTER = Surfaces_Rear_Rib.surfacecounter
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as f:
     # Clear all nodes
