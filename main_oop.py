@@ -462,7 +462,6 @@ with open('Wing_Geometry_Generation.tcl', 'a+') as f:
     CMD = "*createmark surfaces 1 " + STR_IDS
     f.write(CMD)
     f.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
-    f.write('\n*multi_surfs_lines_merge 1 0 0\n*normalsoff\n')
     # Save the file and close
     # f.write("*writefile \"C:/Users/efilippo/Documents/"
     #         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")

@@ -29,28 +29,10 @@ class MultipleSurfaces:
                         self.ids_4[i, j]))
         return my_list
 
-    def move_to_comp(self, i):
-        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
-            file.write('*createentity comps name="'
-                       + self.components_name + '_%.0f"\n'
-                       % (i + 1))
-            file.write(
-                '*startnotehistorystate {Moved surfaces into component "'
-                + self.components_name + '_%.0f"}\n' % (i + 1))
-            file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                       % (self.surfaces[i, 0], self.surfaces[i, -1]))
-            file.write('*movemark surfaces 1 "'
-                       + self.components_name + '_%.0f"\n'
-                       % (i + 1))
-            file.write('*endnotehistorystate {Moved surfaces into component "'
-                       + self.components_name + '_%.0f"}\n'
-                       % (i + 1))
-            file.close()
-
     def write_tcl(self):
-        for i in range(0, self.n_1):
-            for j in range(0, self.n_2):
-                with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+            for i in range(0, self.n_1):
+                for j in range(0, self.n_2):
                     my_list = self.list_creation(i, j)
                     my_str = ' '.join(map(str, my_list))
                     cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
@@ -58,11 +40,22 @@ class MultipleSurfaces:
                     file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
                     self.surfacecounter += 1
                     self.surfaces[i, j] = self.surfacecounter
-                    file.close()
-            self.componentcounter += 1
-            self.components[i, 0] = self.componentcounter
-            self.move_to_comp(i)
-        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+                self.componentcounter += 1
+                self.components[i, 0] = self.componentcounter
+                file.write('*createentity comps name="'
+                           + self.components_name + '_%.0f"\n'
+                           % (i + 1))
+                file.write(
+                    '*startnotehistorystate {Moved surfaces into component "'
+                    + self.components_name + '_%.0f"}\n' % (i + 1))
+                file.write('*createmark surfaces 1 %.0f-%.0f\n'
+                           % (self.surfaces[i, 0], self.surfaces[i, -1]))
+                file.write('*movemark surfaces 1 "'
+                           + self.components_name + '_%.0f"\n'
+                           % (i + 1))
+                file.write('*endnotehistorystate {Moved surfaces into component "'
+                           + self.components_name + '_%.0f"}\n'
+                           % (i + 1))
             file.write(
                 '*createentity assems name="'
                 + self.components_name + '"\n')
@@ -142,27 +135,9 @@ class SingleSurfacesFourCurves:
                         self.ids_4[i, 0]))
         return my_list
 
-    def move_to_comp(self, i):
-        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
-            file.write('*createentity comps name="'
-                       + self.components_name + '_%.0f"\n'
-                       % (i + 1))
-            file.write(
-                '*startnotehistorystate {Moved surfaces into component "'
-                + self.components_name + '_%.0f"}\n' % (i + 1))
-            file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                       % (self.surfaces[i, 0], self.surfaces[i, -1]))
-            file.write('*movemark surfaces 1 "'
-                       + self.components_name + '_%.0f"\n'
-                       % (i + 1))
-            file.write('*endnotehistorystate {Moved surfaces into component "'
-                       + self.components_name + '_%.0f"}\n'
-                       % (i + 1))
-            file.close()
-
     def write_tcl(self):
-        for i in range(0, self.n_1):
-            with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+            for i in range(0, self.n_1):
                 my_list = self.list_creation(i)
                 my_str = ' '.join(map(str, my_list))
                 cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
@@ -170,11 +145,22 @@ class SingleSurfacesFourCurves:
                 file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
                 self.surfacecounter += 1
                 self.surfaces[i, 0] = self.surfacecounter
-                file.close()
-            self.componentcounter += 1
-            self.components[i, 0] = self.componentcounter
-            self.move_to_comp(i)
-        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+                self.componentcounter += 1
+                self.components[i, 0] = self.componentcounter
+                file.write('*createentity comps name="'
+                           + self.components_name + '_%.0f"\n'
+                           % (i + 1))
+                file.write(
+                    '*startnotehistorystate {Moved surfaces into component "'
+                    + self.components_name + '_%.0f"}\n' % (i + 1))
+                file.write('*createmark surfaces 1 %.0f-%.0f\n'
+                           % (self.surfaces[i, 0], self.surfaces[i, -1]))
+                file.write('*movemark surfaces 1 "'
+                           + self.components_name + '_%.0f"\n'
+                           % (i + 1))
+                file.write('*endnotehistorystate {Moved surfaces into component "'
+                           + self.components_name + '_%.0f"}\n'
+                           % (i + 1))
             file.write(
                 '*createentity assems name="'
                 + self.components_name + '"\n')
