@@ -14,13 +14,11 @@ class DerivedGeometry:
     def __init__(self,
                  SemiSpan,
                  YB_percent,
-                 N_spars,
                  N_ribs_central,
                  N_ribs_yehudi,
                  N_ribs_semispan,
-                 Spars_position,
                  Fuselage_section_percent,
-                 SC_width):
+                 ):
         """################## Derived Parameters: ##################."""
         # Half of the number of airfoil points to use it in indexing
         self.n = 120

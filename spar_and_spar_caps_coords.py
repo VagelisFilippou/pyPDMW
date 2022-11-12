@@ -68,12 +68,6 @@ class SparsAndCapsCoords:
         #                                          Fuselage_rib],
         #                                          Spars_nodes_X[i, -1]])
 
-        plt.figure()
-        for i in range(0, N_spars):
-            plt.plot(Spars_nodes_X[i, :], Spars_nodes_Y[i, :])
-        for j in range(0, N_ribs):
-            plt.plot(wing.Rib_line_x[j, :], wing.Rib_line_y[j, :])
-
         for i in range(0, N_spars):
             for j in range(0, N_ribs):
                 x_int, y_int =\

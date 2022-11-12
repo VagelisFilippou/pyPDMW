@@ -15,125 +15,83 @@ class SparsCapsIDs:
                  N_spars,
                  n):
 
-        Spars_nodes_X = Spars_And_Spar_Caps.Spars_nodes_X
-        Spar_Caps_XL = Spars_And_Spar_Caps.Spar_Caps_XL
-        Spar_Caps_XR = Spars_And_Spar_Caps.Spar_Caps_XR
+        self.coord_x = X
+        self.coord_y = Y
+        self.coord_z = Z
+        self.n_nodes = n
 
-        """
-        ### Put the spars' coordinates in the XYZ arrays and store their index:
-        """
+        spars_nodes_x = Spars_And_Spar_Caps.Spars_nodes_X
+        spar_caps_xl = Spars_And_Spar_Caps.Spar_Caps_XL
+        spar_caps_xr = Spars_And_Spar_Caps.Spar_Caps_XR
+
         # Initialize ID lists that spar nodes will be stored
-        Spar_ID_Lower = []
-        Spar_ID_Upper = []
-        Spar_Cap_ID_Lower_Left = []
-        Spar_Cap_ID_Upper_Left = []
-        Spar_Cap_ID_Lower_Right = []
-        Spar_Cap_ID_Upper_Right = []
+        self.Spar_ID_Lower = np.zeros((N_ribs, N_spars))
+        self.Spar_Cap_ID_Lower_Left = np.zeros((N_ribs, N_spars))
+        self.Spar_Cap_ID_Lower_Right = np.zeros((N_ribs, N_spars))
+        self.Spar_ID_Upper = np.zeros((N_ribs, N_spars))
+        self.Spar_Cap_ID_Upper_Left = np.zeros((N_ribs, N_spars))
+        self.Spar_Cap_ID_Upper_Right = np.zeros((N_ribs, N_spars))
 
         # Lower nodes of spars
         for i in range(0, N_ribs):
             for j in range(0, N_spars):
                 for k in range(n, 2 * n):
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] < Spars_nodes_X[j, i] < X[i, k + 1]:
-                        X[i, k] = Spars_nodes_X[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Z[i, k - 1], Z[i, k + 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Y[i, k - 1], Y[i, k + 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_ID_Lower.append(i * 2 * n + k + 1)
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] < Spar_Caps_XL[j, i] < X[i, k + 1]:
-                        X[i, k] = Spar_Caps_XL[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Z[i, k - 1], Z[i, k + 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Y[i, k - 1], Y[i, k + 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_Cap_ID_Lower_Left.append(i * 2 * n + k + 1)
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] < Spar_Caps_XR[j, i] < X[i, k + 1]:
-                        X[i, k] = Spar_Caps_XR[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Z[i, k - 1], Z[i, k + 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Y[i, k - 1], Y[i, k + 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_Cap_ID_Lower_Right.append(i * 2 * n + k + 1)
-        # Reshape to a matrix for easier handling
-        Spar_ID_Lower = np.array(Spar_ID_Lower)
-        self.Spar_ID_Lower = Spar_ID_Lower.reshape(N_ribs, N_spars)
-
-        Spar_Cap_ID_Lower_Left = np.array(Spar_Cap_ID_Lower_Left)
-        self.Spar_Cap_ID_Lower_Left = Spar_Cap_ID_Lower_Left.reshape(N_ribs,
-                                                                     N_spars)
-
-        Spar_Cap_ID_Lower_Right = np.array(Spar_Cap_ID_Lower_Right)
-        self.Spar_Cap_ID_Lower_Right = Spar_Cap_ID_Lower_Right.reshape(N_ribs,
-                                                                       N_spars)
+                    self.adjust_lower_nodes(i, j, k, spars_nodes_x,
+                                            self.Spar_ID_Lower)
+                    self.adjust_lower_nodes(i, j, k, spar_caps_xl,
+                                            self.Spar_Cap_ID_Lower_Left)
+                    self.adjust_lower_nodes(i, j, k, spar_caps_xr,
+                                            self.Spar_Cap_ID_Lower_Right)
 
         # Upper nodes of spars
         for i in range(0, N_ribs):
             for j in range(0, N_spars):
                 for k in range(0, n):
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] > Spars_nodes_X[j, i] > X[i, k + 1]:
-                        X[i, k] = Spars_nodes_X[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Z[i, k + 1], Z[i, k - 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Y[i, k + 1], Y[i, k - 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_ID_Upper.append(i * 2 * n + k + 1)
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] > Spar_Caps_XL[j, i] > X[i, k + 1]:
-                        X[i, k] = Spar_Caps_XL[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Z[i, k + 1], Z[i, k - 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Y[i, k + 1], Y[i, k - 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_Cap_ID_Upper_Left.append(i * 2 * n + k + 1)
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] > Spar_Caps_XR[j, i] > X[i, k + 1]:
-                        X[i, k] = Spar_Caps_XR[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Z[i, k + 1], Z[i, k - 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Y[i, k + 1], Y[i, k - 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_Cap_ID_Upper_Right.append(i * 2 * n + k + 1)
+                    self.adjust_upper_nodes(i, j, k, spars_nodes_x,
+                                            self.Spar_ID_Upper)
+                    self.adjust_upper_nodes(i, j, k, spar_caps_xl,
+                                            self.Spar_Cap_ID_Upper_Left)
+                    self.adjust_upper_nodes(i, j, k, spar_caps_xr,
+                                            self.Spar_Cap_ID_Upper_Right)
 
-        # Reshape to a matrix for easier handling
-        Spar_ID_Upper = np.array(Spar_ID_Upper)
-        self.Spar_ID_Upper = Spar_ID_Upper.reshape(N_ribs, N_spars)
+    def adjust_lower_nodes(self, i, j, k, desired, id_s):
+        """
+        Put the desired upper coordinates in the XYZ & stores their index:
+        """
+        if k < 2 * self.n_nodes - 1 and \
+                self.coord_x[i, k - 1] < desired[j, i] < self.coord_x[i, k + 1]:
+            self.coord_x[i, k] = desired[j, i]
+            self.coord_z[i, k] = np.interp(self.coord_x[i, k],
+                                           [self.coord_x[i, k - 1],
+                                            self.coord_x[i, k + 1]],
+                                           [self.coord_z[i, k - 1],
+                                            self.coord_z[i, k + 1]])
+            self.coord_y[i, k] = np.interp(self.coord_x[i, k],
+                                           [self.coord_x[i, k - 1],
+                                            self.coord_x[i, k + 1]],
+                                           [self.coord_y[i, k - 1],
+                                            self.coord_y[i, k + 1]])
+            # Store indices
+            # (+1) because of the different indexing of python & HM
+            id_s[i, j] = i * 2 * self.n_nodes + k + 1
 
-        Spar_Cap_ID_Upper_Left = np.array(Spar_Cap_ID_Upper_Left)
-        self.Spar_Cap_ID_Upper_Left = Spar_Cap_ID_Upper_Left.reshape(N_ribs,
-                                                                     N_spars)
-
-        Spar_Cap_ID_Upper_Right = np.array(Spar_Cap_ID_Upper_Right)
-        self.Spar_Cap_ID_Upper_Right = Spar_Cap_ID_Upper_Right.reshape(N_ribs,
-                                                                       N_spars)
-        self.X = X
-        self.Y = Y
-        self.Z = Z
+    def adjust_upper_nodes(self, i, j, k, desired, id_s):
+        """
+        Put the desired upper coordinates in the XYZ & stores their index:
+        """
+        if k < 2 * self.n_nodes - 1 and \
+                self.coord_x[i, k - 1] > desired[j, i] > self.coord_x[i, k + 1]:
+            self.coord_x[i, k] = desired[j, i]
+            self.coord_z[i, k] = np.interp(self.coord_x[i, k],
+                                           [self.coord_x[i, k + 1],
+                                            self.coord_x[i, k - 1]],
+                                           [self.coord_z[i, k + 1],
+                                            self.coord_z[i, k - 1]])
+            self.coord_y[i, k] = np.interp(self.coord_x[i, k],
+                                           [self.coord_x[i, k + 1],
+                                            self.coord_x[i, k - 1]],
+                                           [self.coord_y[i, k + 1],
+                                            self.coord_y[i, k - 1]])
+            # Store indices
+            # (+1) because of the different indexing of python & HM
+            id_s[i, j] = i * 2 * self.n_nodes + k + 1

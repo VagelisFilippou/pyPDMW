@@ -56,7 +56,7 @@ N_SPARS = 3  # Number of spars
 N_RIBS_CENTRAL = 5  # Number of equally spaced ribs
 N_RIBS_YEHUDI = 5  # Number of equally spaced ribs
 N_RIBS_SEMISPAN = 5  # Number of equally spaced ribs
-
+N_STRINGERS = 5  # Number of stringers per section
 # List with the location of each spar
 SPARS_POSITION = np.linspace(0.1, 0.7, num=N_SPARS, endpoint=True)
 
@@ -97,22 +97,17 @@ Spars_And_Spar_Caps = SparsAndCapsCoords(Parameters,
                                          N_SPARS,
                                          SPARS_POSITION,
                                          SC_width,
-                                         SEMI_SPAN)
-Spars_nodes_X = Spars_And_Spar_Caps.Spars_nodes_X
-Spars_nodes_Y = Spars_And_Spar_Caps.Spars_nodes_Y
-Spar_Caps_XL = Spars_And_Spar_Caps.Spar_Caps_XL
-Spar_Caps_XR = Spars_And_Spar_Caps.Spar_Caps_XR
-Spar_Caps_YL = Spars_And_Spar_Caps.Spar_Caps_YL
-Spar_Caps_YR = Spars_And_Spar_Caps.Spar_Caps_YR
+                                         SEMI_SPAN
+                                         )
 
 # ## Put the spars' coordinates in the XYZ arrays and store their index: ###
 
 XYZ = SparsCapsIDs(Spars_And_Spar_Caps, X, Y, Z, N_RIBS, N_SPARS,
                    NUMBER_OF_NODES)
 
-X = XYZ.coord_x
-Y = XYZ.coord_y
-Z = XYZ.coord_z
+X = XYZ.X
+Y = XYZ.Y
+Z = XYZ.Z
 
 Spar_ID_Lower = XYZ.Spar_ID_Lower
 Spar_ID_Upper = XYZ.Spar_ID_Upper
@@ -131,12 +126,6 @@ Curve_IDs_Lower = Con_Nodes.Curve_IDs_Lower
 LE_IDs = Con_Nodes.LE_IDs
 TE_IDs_u = Con_Nodes.TE_IDs_u
 TE_IDs_l = Con_Nodes.TE_IDs_l
-
-plt.figure()
-plt.scatter(X, Y, 1, marker='o')
-plt.scatter(Spars_nodes_X, Spars_nodes_Y, 5, marker='o')
-plt.scatter(Spar_Caps_XL, Spar_Caps_YL, 5, marker='o')
-plt.scatter(Spar_Caps_XR, Spar_Caps_YR, 5, marker='o')
 
 # ################# Writing in Command file: ##################
 
@@ -250,219 +239,10 @@ Curve_Lower_Right_Spar_Cap =\
                                        Curve_Upper_Right_Spar_Cap.
                                        curvecounter)
 
-Surfaces_Left_Spar_Cap_Rib =\
-    surface_classes.MultipleSurfaces(
-        N_RIBS,
-        N_SPARS,
-        Curve_Upper_Rib.sections_id.SC_L,
-        Curve_Lower_Rib.sections_id.SC_L,
-        Curve_Left_Spar_Cap_In_Ribs.curves,
-        Curve_Spar_In_Ribs.curves,
-        SURFACE_COUNTER,
-        COMPONENT_COUNTER,
-        ASSEMBLY_COUNTER,
-        'L_Spar_Cap_Rib')
-
-Surfaces_Right_Spar_Cap_Rib =\
-    surface_classes.MultipleSurfaces(
-        N_RIBS,
-        N_SPARS,
-        Curve_Upper_Rib.sections_id.SC_R,
-        Curve_Lower_Rib.sections_id.SC_R,
-        Curve_Right_Spar_Cap_In_Ribs.curves,
-        Curve_Spar_In_Ribs.curves,
-        Surfaces_Left_Spar_Cap_Rib.surfacecounter,
-        Surfaces_Left_Spar_Cap_Rib.componentcounter,
-        Surfaces_Left_Spar_Cap_Rib.assemblycounter,
-        'R_Spar_Cap_Rib')
-
-Surfaces_Main_Rib =\
-    surface_classes.MainRibSurfaces(
-        N_RIBS,
-        N_SPARS - 1,
-        Curve_Upper_Rib.sections_id.spars,
-        Curve_Lower_Rib.sections_id.spars,
-        Curve_Right_Spar_Cap_In_Ribs.curves,
-        Curve_Left_Spar_Cap_In_Ribs.curves,
-        Surfaces_Right_Spar_Cap_Rib.surfacecounter,
-        Surfaces_Right_Spar_Cap_Rib.componentcounter,
-        Surfaces_Right_Spar_Cap_Rib.assemblycounter,
-        'Main_Rib')
-
-Surfaces_Spars =\
-    surface_classes.SparSurfaces(
-        N_RIBS - 1,
-        N_SPARS,
-        Curve_Upper_Spar.curves,
-        Curve_Lower_Spar.curves,
-        Curve_Spar_In_Ribs.curves,
-        Curve_Spar_In_Ribs.curves,
-        Surfaces_Main_Rib.surfacecounter,
-        Surfaces_Main_Rib.componentcounter,
-        Surfaces_Main_Rib.assemblycounter,
-        'Spars')
-
-Surfaces_Upper_Skin =\
-    surface_classes.SkinSurfaces(
-        N_RIBS - 1,
-        N_SPARS - 1,
-        Curve_Upper_Rib.sections_id.spars,
-        Curve_Upper_Rib.sections_id.spars,
-        Curve_Upper_Left_Spar_Cap.curves,
-        Curve_Upper_Right_Spar_Cap.curves,
-        Surfaces_Spars.surfacecounter,
-        Surfaces_Spars.componentcounter,
-        Surfaces_Spars.assemblycounter,
-        'Upper_Skin')
-
-Surfaces_Lower_Skin =\
-    surface_classes.SkinSurfaces(
-        N_RIBS - 1,
-        N_SPARS - 1,
-        Curve_Lower_Rib.sections_id.spars,
-        Curve_Lower_Rib.sections_id.spars,
-        Curve_Lower_Left_Spar_Cap.curves,
-        Curve_Lower_Right_Spar_Cap.curves,
-        Surfaces_Upper_Skin.surfacecounter,
-        Surfaces_Upper_Skin.componentcounter,
-        Surfaces_Upper_Skin.assemblycounter,
-        'Lower_Skin')
-
-Surfaces_Upper_Left_Spar_Cap =\
-    surface_classes.SparCapsSurfaces(
-        N_RIBS - 1,
-        N_SPARS,
-        Curve_Upper_Left_Spar_Cap.curves,
-        Curve_Upper_Spar.curves,
-        Curve_Upper_Rib.sections_id.SC_L,
-        Curve_Upper_Rib.sections_id.SC_L,
-        Surfaces_Lower_Skin.surfacecounter,
-        Surfaces_Lower_Skin.componentcounter,
-        Surfaces_Lower_Skin.assemblycounter,
-        'Upper_Left_Spar_Cap')
-
-Surfaces_Upper_Right_Spar_Cap =\
-    surface_classes.SparCapsSurfaces(
-        N_RIBS - 1,
-        N_SPARS,
-        Curve_Upper_Right_Spar_Cap.curves,
-        Curve_Upper_Spar.curves,
-        Curve_Upper_Rib.sections_id.SC_R,
-        Curve_Upper_Rib.sections_id.SC_R,
-        Surfaces_Upper_Left_Spar_Cap.surfacecounter,
-        Surfaces_Upper_Left_Spar_Cap.componentcounter,
-        Surfaces_Upper_Left_Spar_Cap.assemblycounter,
-        'Upper_Right_Spar_Cap')
-
-Surfaces_Lower_Right_Spar_Cap =\
-    surface_classes.SparCapsSurfaces(
-        N_RIBS - 1,
-        N_SPARS,
-        Curve_Lower_Right_Spar_Cap.curves,
-        Curve_Lower_Spar.curves,
-        Curve_Lower_Rib.sections_id.SC_R,
-        Curve_Lower_Rib.sections_id.SC_R,
-        Surfaces_Upper_Right_Spar_Cap.surfacecounter,
-        Surfaces_Upper_Right_Spar_Cap.componentcounter,
-        Surfaces_Upper_Right_Spar_Cap.assemblycounter,
-        'Lower_Right_Spar_Cap')
-
-Surfaces_Lower_Left_Spar_Cap =\
-    surface_classes.SparCapsSurfaces(
-        N_RIBS - 1,
-        N_SPARS,
-        Curve_Lower_Left_Spar_Cap.curves,
-        Curve_Lower_Spar.curves,
-        Curve_Lower_Rib.sections_id.SC_L,
-        Curve_Lower_Rib.sections_id.SC_L,
-        Surfaces_Lower_Right_Spar_Cap.surfacecounter,
-        Surfaces_Lower_Right_Spar_Cap.componentcounter,
-        Surfaces_Lower_Right_Spar_Cap.assemblycounter,
-        'Lower_Left_Spar_Cap')
-
-Surfaces_Front_Upper_Skin =\
-    surface_classes.FrontSkins(
-        N_RIBS - 1,
-        Curve_Upper_Rib.sections_id.LE,
-        Curve_Upper_Rib.sections_id.LE,
-        Curve_Upper_Left_Spar_Cap.curves,
-        Curve_Leading_Edge.curves,
-        Surfaces_Lower_Left_Spar_Cap.surfacecounter,
-        Surfaces_Lower_Left_Spar_Cap.componentcounter,
-        Surfaces_Lower_Left_Spar_Cap.assemblycounter,
-        'Upper_Front_Skin')
-
-Surfaces_Front_Lower_Skin =\
-    surface_classes.FrontSkins(
-        N_RIBS - 1,
-        Curve_Lower_Rib.sections_id.LE,
-        Curve_Lower_Rib.sections_id.LE,
-        Curve_Lower_Left_Spar_Cap.curves,
-        Curve_Leading_Edge.curves,
-        Surfaces_Front_Upper_Skin.surfacecounter,
-        Surfaces_Front_Upper_Skin.componentcounter,
-        Surfaces_Front_Upper_Skin.assemblycounter,
-        'Lower_Front_Skin')
-
-Surfaces_Rear_Upper_Skin =\
-    surface_classes.RearSkins(
-        N_RIBS - 1,
-        Curve_Upper_Rib.sections_id.TE,
-        Curve_Upper_Rib.sections_id.TE,
-        Curve_Upper_Right_Spar_Cap.curves,
-        Curve_Trailing_Edge.curves,
-        Surfaces_Front_Lower_Skin.surfacecounter,
-        Surfaces_Front_Lower_Skin.componentcounter,
-        Surfaces_Front_Lower_Skin.assemblycounter,
-        'Upper_Rear_Skin')
-
-Surfaces_Rear_Lower_Skin =\
-    surface_classes.RearSkins(
-        N_RIBS - 1,
-        Curve_Lower_Rib.sections_id.TE,
-        Curve_Lower_Rib.sections_id.TE,
-        Curve_Lower_Right_Spar_Cap.curves,
-        Curve_Trailing_Edge.curves,
-        Surfaces_Rear_Upper_Skin.surfacecounter,
-        Surfaces_Rear_Upper_Skin.componentcounter,
-        Surfaces_Rear_Upper_Skin.assemblycounter,
-        'Lower_Rear_Skin')
-
-Surfaces_Front_Rib =\
-    surface_classes.FrontRib(
-        N_RIBS,
-        Curve_Lower_Rib.sections_id.LE,
-        Curve_Upper_Rib.sections_id.LE,
-        Curve_Left_Spar_Cap_In_Ribs.curves,
-        Surfaces_Rear_Lower_Skin.surfacecounter,
-        Surfaces_Rear_Lower_Skin.componentcounter,
-        Surfaces_Rear_Lower_Skin.assemblycounter,
-        'Front_Rib')
-
-Surfaces_Rear_Rib =\
-    surface_classes.RearRib(
-        N_RIBS,
-        Curve_Lower_Rib.sections_id.TE,
-        Curve_Upper_Rib.sections_id.TE,
-        Curve_Right_Spar_Cap_In_Ribs.curves,
-        Surfaces_Front_Rib.surfacecounter,
-        Surfaces_Front_Rib.componentcounter,
-        Surfaces_Front_Rib.assemblycounter,
-        'Rear_Rib')
-
-SURFACE_COUNTER = Surfaces_Rear_Rib.surfacecounter
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as f:
     # Clear all nodes
     f.write("*nodecleartempmark\n")
-
-    # Clean-up the geometry
-    my_list = list(range(1, SURFACE_COUNTER + 1))
-    STR_IDS = ' '.join(map(str, my_list))
-    CMD = "*createmark surfaces 1 " + STR_IDS
-    f.write(CMD)
-    f.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
-    f.write('\n*multi_surfs_lines_merge 1 0 0\n*normalsoff\n')
     # Save the file and close
     # f.write("*writefile \"C:/Users/efilippo/Documents/"
     #         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
