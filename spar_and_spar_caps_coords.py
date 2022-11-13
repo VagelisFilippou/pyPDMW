@@ -1,7 +1,6 @@
 """A script that contains the class that calculates the spars coordinates."""
 
 import numpy as np
-import matplotlib.pyplot as plt
 from intersect import intersection
 
 

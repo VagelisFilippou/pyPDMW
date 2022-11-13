@@ -146,10 +146,10 @@ SURFACE_COUNTER = 0
 COMPONENT_COUNTER = 1  # =1 because of the initial component
 ASSEMBLY_COUNTER = 1
 # Open a .tcl file and write the commands there
-with open('Wing_Geometry_Generation.tcl', 'w') as f:
-    f.write('#----------Commands for wing geometry generation----------\n')
+with open('Wing_Geometry_Generation.tcl', 'w') as file:
+    file.write('#----------Commands for wing geometry generation----------\n')
     # Change node tolerance
-    f.write('*toleranceset 0.01\n')
+    file.write('*toleranceset 0.01\n')
 
     # Now print nodes in this format: *createnode x y z system id 0 0
     for i in range(0, N_RIBS):
@@ -158,9 +158,9 @@ with open('Wing_Geometry_Generation.tcl', 'w') as f:
             # f.write('*createpoint %.7f %.7f %.7f 0\n'
             #         % (X[i, j], Y[i, j], Z[i, j]))
             # Nodes
-            f.write('*createnode %.7f %.7f %.7f 0 0 0\n'
-                    % (X[i, j], Y[i, j], Z[i, j]))
-f.close()
+            file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+                       % (X[i, j], Y[i, j], Z[i, j]))
+file.close()
 
 
 Curve_Upper_Rib = curve_classes.UpperRibCurve(N_RIBS, N_SPARS,
@@ -176,11 +176,12 @@ Curve_Leading_Edge = curve_classes.LeadingTrailingEdgeCurves(N_RIBS,
                                                              Curve_Lower_Rib
                                                              .curvecounter)
 
-Curve_Trailing_Edge = curve_classes.LeadingTrailingEdgeCurves(N_RIBS,
-                                                              1,
-                                                              TE_IDs_u,
-                                                              Curve_Leading_Edge
-                                                              .curvecounter)
+Curve_Trailing_Edge =\
+    curve_classes.LeadingTrailingEdgeCurves(N_RIBS,
+                                            1,
+                                            TE_IDs_u,
+                                            Curve_Leading_Edge
+                                            .curvecounter)
 
 Curve_Spar_In_Ribs = curve_classes.MultipleCurves(N_RIBS, N_SPARS,
                                                   Spar_ID_Upper,
@@ -452,23 +453,25 @@ Surfaces_Rear_Rib =\
 
 SURFACE_COUNTER = Surfaces_Rear_Rib.surfacecounter
 
-with open('Wing_Geometry_Generation.tcl', 'a+') as f:
+with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
-    f.write("*nodecleartempmark\n")
+    file.write("*nodecleartempmark\n")
 
     # Clean-up the geometry
     my_list = list(range(1, SURFACE_COUNTER + 1))
     STR_IDS = ' '.join(map(str, my_list))
     CMD = "*createmark surfaces 1 " + STR_IDS
-    f.write(CMD)
-    f.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
+    file.write(CMD)
+    file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
     # Save the file and close
     # f.write("*writefile \"C:/Users/efilippo/Documents/"
     #         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
-    f.write("*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
-    f.write("return; # Stop script and return to application\n*quit 1;\n")
-f.close()
+    file.write(
+           "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+           "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
+           )
+    file.write("return; # Stop script and return to application\n*quit 1;\n")
+file.close()
 
 # ################# Running the Command file: ##################
 
