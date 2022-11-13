@@ -26,6 +26,7 @@ Advices:
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+from wing_parameters import Parameters
 from derive_geometry import DerivedGeometry
 from read_crm_data_incl import RibsInclined
 from spar_and_spar_caps_coords import SparsAndCapsCoords
@@ -47,57 +48,40 @@ delete_files()
 
 # ################# User Defined Values: ##################
 
-# Define Wing's Parameters:
-SEMI_SPAN = 29.38
-YB_PERCENT = 0.37  # Yehudi Break in Percent of Semispan
-
-# Define Wing's Structural Parameters
-N_SPARS = 10  # Number of spars
-N_RIBS_CENTRAL = 5  # Number of equally spaced ribs
-N_RIBS_YEHUDI = 10  # Number of equally spaced ribs
-N_RIBS_SEMISPAN = 30  # Number of equally spaced ribs
-
-# List with the location of each spar
-SPARS_POSITION = np.linspace(0.1, 0.7, num=N_SPARS, endpoint=True)
-
-# Specify the length of the fuselage wingbox
-FSLG_SECTION_PERCENT = 0.1
-
-# Define two widths per spar at the root and at the tip: UL, UR, LL, LR
-SC_width = np.array([[0.3, 0.3], [0.1, 0.1]]) * 0.6
-
-# ################# Derive the Geometry and its' Parameters: ##################
+# SPARS_POSITION = np.linspace(0.1, 0.7, num=N_SPARS, endpoint=True)
 
 
-Parameters = DerivedGeometry(SEMI_SPAN,
-                             YB_PERCENT,
-                             N_RIBS_CENTRAL,
-                             N_RIBS_YEHUDI,
-                             N_RIBS_SEMISPAN,
-                             FSLG_SECTION_PERCENT,
-                             )
 
-wing = RibsInclined(Parameters.Y_list,
-                    SPARS_POSITION,
-                    Parameters.Origin[:, 0],
-                    Parameters.Rib_Sections_ID)
+# See the wing_parameters.py file for more info about the parameters
+parameters = Parameters(
+    29.38,
+    0.37,
+    3,
+    5,
+    10,
+    30,
+    0.1,
+    0.7,
+    0.1,
+    0.3,
+    0.3,
+    0.1,
+    0.1)
+
+# ################# Derive the Geometry and its' parameters: ##################
+
+
+Derived_Geometry = DerivedGeometry(parameters)
+
+wing = RibsInclined(Derived_Geometry, parameters)
 
 
 X, Y, Z = wing.X, wing.Y, wing.Z
 
-N_RIBS = Parameters.N_ribs
-Origin = Parameters.Origin
-Rib_Sections_ID = Parameters.Rib_Sections_ID
-NUMBER_OF_NODES = Parameters.n
-
 # ## Spar and spar caps coordinates: ###
 
-Spars_And_Spar_Caps = SparsAndCapsCoords(Parameters,
-                                         wing,
-                                         N_SPARS,
-                                         SPARS_POSITION,
-                                         SC_width,
-                                         SEMI_SPAN)
+Spars_And_Spar_Caps = SparsAndCapsCoords(Derived_Geometry, wing, parameters)
+
 Spars_nodes_X = Spars_And_Spar_Caps.Spars_nodes_X
 Spars_nodes_Y = Spars_And_Spar_Caps.Spars_nodes_Y
 Spar_Caps_XL = Spars_And_Spar_Caps.Spar_Caps_XL
@@ -107,8 +91,7 @@ Spar_Caps_YR = Spars_And_Spar_Caps.Spar_Caps_YR
 
 # ## Put the spars' coordinates in the XYZ arrays and store their index: ###
 
-XYZ = SparsCapsIDs(Spars_And_Spar_Caps, X, Y, Z, N_RIBS, N_SPARS,
-                   NUMBER_OF_NODES)
+XYZ = SparsCapsIDs(wing,  Derived_Geometry, Spars_And_Spar_Caps, parameters)
 
 X = XYZ.coord_x
 Y = XYZ.coord_y
@@ -125,7 +108,7 @@ Spar_Cap_ID_Upper_Right = XYZ.Spar_Cap_ID_Upper_Right
 # Insert LE, TE, Spars and Spar Caps to coords arrays for curve construction:
 ###
 
-Con_Nodes = ConnectionNodes(Parameters, XYZ, N_SPARS)
+Con_Nodes = ConnectionNodes(Derived_Geometry, XYZ, parameters.n_spars)
 Curve_IDs_Upper = Con_Nodes.Curve_IDs_Upper
 Curve_IDs_Lower = Con_Nodes.Curve_IDs_Lower
 LE_IDs = Con_Nodes.LE_IDs
@@ -139,6 +122,10 @@ plt.scatter(Spar_Caps_XL, Spar_Caps_YL, 5, marker='o')
 plt.scatter(Spar_Caps_XR, Spar_Caps_YR, 5, marker='o')
 
 # ################# Writing in Command file: ##################
+
+N_RIBS = Derived_Geometry.N_ribs
+N_SPARS = parameters.n_spars
+NUMBER_OF_NODES = Derived_Geometry.n
 
 # Initialization of counters
 CURVE_COUNTER = 0

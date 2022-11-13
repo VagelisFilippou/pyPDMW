@@ -11,34 +11,33 @@ from read_oml import read_oml
 class DerivedGeometry:
     """Class for geometric parameters of the wing ribs' coords."""
 
-    def __init__(self,
-                 SemiSpan,
-                 YB_percent,
-                 N_ribs_central,
-                 N_ribs_yehudi,
-                 N_ribs_semispan,
-                 Fuselage_section_percent,
-                 ):
+    def __init__(self, parameters):
         """################## Derived Parameters: ##################."""
         # Half of the number of airfoil points to use it in indexing
         self.n = 120
 
         # Number of ribs in total
-        self.N_ribs = N_ribs_central + N_ribs_yehudi + N_ribs_semispan
-        self.Rib_Sections_ID = [N_ribs_central, N_ribs_central + N_ribs_yehudi,
+        self.N_ribs = parameters.n_ribs_central +\
+            parameters.n_ribs_yehudi +\
+            parameters.n_ribs_semispan
+        self.Rib_Sections_ID = [parameters.n_ribs_central,
+                                parameters.n_ribs_central +
+                                parameters.n_ribs_yehudi,
                                 self.N_ribs]
 
         # Yehudi Break
-        self.Yehudi = SemiSpan * YB_percent
+        self.Yehudi = parameters.semi_span * parameters.yb_percent
 
         # Fuselage_rib :The index of the rib that is near the fuselage
         # Until this rib, spars are aligned with the Y axis
-        self.FSL = Fuselage_section_percent * SemiSpan
+        self.FSL = parameters.fslg_section_percent * parameters.semi_span
 
         # Define ribs spacing or ribs number
-        self.Ribs_Spacing_central = self.FSL / (N_ribs_central - 1)
-        self.Ribs_Spacing_yehudi = (self.Yehudi - self.FSL) / N_ribs_yehudi
-        self.Ribs_Spacing_semispan = (SemiSpan - self.Yehudi) / N_ribs_semispan
+        self.Ribs_Spacing_central = self.FSL / (parameters.n_ribs_central - 1)
+        self.Ribs_Spacing_yehudi = (self.Yehudi - self.FSL) /\
+            parameters.n_ribs_yehudi
+        self.Ribs_Spacing_semispan = (parameters.semi_span - self.Yehudi) /\
+            parameters.n_ribs_semispan
 
         """
         ### Calculate positions in Y and the origins: ###
@@ -47,12 +46,12 @@ class DerivedGeometry:
         self.Y_list = []
 
         # Calculate the positions and append them to the list
-        for i in range(0, N_ribs_central):
+        for i in range(0, parameters.n_ribs_central):
             self.Y_list.append(i * self.Ribs_Spacing_central)
-        for i in range(0, N_ribs_yehudi):
+        for i in range(0, parameters.n_ribs_yehudi):
             self.Y_list.append((i + 1) * self.Ribs_Spacing_yehudi +
                                self.Y_list[self.Rib_Sections_ID[0] - 1])
-        for i in range(0, N_ribs_semispan):
+        for i in range(0, parameters.n_ribs_semispan):
             self.Y_list.append((i + 1) * self.Ribs_Spacing_semispan +
                                self.Y_list[self.Rib_Sections_ID[1] - 1])
 

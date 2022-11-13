@@ -6,7 +6,7 @@ import numpy as np
 class ConnectionNodes:
     """A class for the calculation of the connection nodes."""
 
-    def __init__(self, Parameters, XYZ, N_spars):
+    def __init__(self, Parameters, XYZ, N_spars, N_stringers):
 
         # Initialize matrices for LE and TE storing
         self.LE_IDs = np.zeros((Parameters.N_ribs, 1))
@@ -16,28 +16,33 @@ class ConnectionNodes:
         # Define their values
         self.calculate_le_te_ids(Parameters)
         # Put the other node ids in the curve arrays
-        self.put_in_arrays(Parameters, XYZ, N_spars)
+        self.put_in_arrays(Parameters, XYZ, N_spars, N_stringers)
         # Insert the TE and LE ids to curve arrays
         self.insert_le_te(N_spars)
 
-    def put_in_arrays(self, parameters, xyz, n_spars):
-
+    def put_in_arrays(self, parameters, xyz, n_spars, n_stringers):
         # Insert them to the arrays
-        self.Curve_IDs_Upper = np.zeros((parameters.N_ribs, 3 * n_spars))
-        self.Curve_IDs_Lower = np.zeros((parameters.N_ribs, 3 * n_spars))
+        self.Curve_IDs_Upper =\
+            np.zeros((parameters.N_ribs,
+                      3 * n_spars + n_stringers))
+        self.Curve_IDs_Lower =\
+            np.zeros((parameters.N_ribs,
+                      3 * n_spars + n_stringers))
 
         for i in range(0, parameters.N_ribs):
             self.Curve_IDs_Upper[i, :] =\
                 - np.sort(- np.concatenate(np.array([
                     xyz.Spar_ID_Upper[i, :],
                     xyz.Spar_Cap_ID_Upper_Left[i, :],
-                    xyz.Spar_Cap_ID_Upper_Right[i, :]]
+                    xyz.Spar_Cap_ID_Upper_Right[i, :],
+                    xyz.stringer_id_upper[i, :]]
                     )))
             self.Curve_IDs_Lower[i, :] =\
                 np.sort(np.concatenate(np.array([
                     xyz.Spar_ID_Lower[i, :],
                     xyz.Spar_Cap_ID_Lower_Left[i, :],
-                    xyz.Spar_Cap_ID_Lower_Right[i, :]]
+                    xyz.Spar_Cap_ID_Lower_Right[i, :],
+                    xyz.stringer_id_lower[i, :]]
                     )))
 
     def calculate_le_te_ids(self, parameters):

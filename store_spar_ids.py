@@ -6,50 +6,60 @@ import numpy as np
 class SparsCapsIDs:
     """A class that inserts the spar and caps coords into the XYZ arrays."""
 
-    def __init__(self,
-                 Spars_And_Spar_Caps,
-                 X,
-                 Y,
-                 Z,
-                 N_ribs,
-                 N_spars,
-                 n):
+    def __init__(self, wing,  derived_geometry, spars_and_spar_caps,
+                 parameters):
 
-        self.coord_x = X
-        self.coord_y = Y
-        self.coord_z = Z
-        self.n_nodes = n
+        self.coord_x = wing.X
+        self.coord_y = wing.Y
+        self.coord_z = wing.Z
+        self.n_nodes = derived_geometry.n
 
-        spars_nodes_x = Spars_And_Spar_Caps.Spars_nodes_X
-        spar_caps_xl = Spars_And_Spar_Caps.Spar_Caps_XL
-        spar_caps_xr = Spars_And_Spar_Caps.Spar_Caps_XR
+        spars_nodes_x = spars_and_spar_caps.Spars_nodes_X
+        spar_caps_xl = spars_and_spar_caps.Spar_Caps_XL
+        spar_caps_xr = spars_and_spar_caps.Spar_Caps_XR
+        stringers_x = spars_and_spar_caps.stringers_nodes_x
+
+        stringers_position = parameters.stringers_pos()
+        n_stringers_total = len(stringers_position)
+        n_ribs = derived_geometry.N_ribs
+        n_spars = parameters.n_spars
 
         # Initialize ID lists that spar nodes will be stored
-        self.Spar_ID_Lower = np.zeros((N_ribs, N_spars))
-        self.Spar_Cap_ID_Lower_Left = np.zeros((N_ribs, N_spars))
-        self.Spar_Cap_ID_Lower_Right = np.zeros((N_ribs, N_spars))
-        self.Spar_ID_Upper = np.zeros((N_ribs, N_spars))
-        self.Spar_Cap_ID_Upper_Left = np.zeros((N_ribs, N_spars))
-        self.Spar_Cap_ID_Upper_Right = np.zeros((N_ribs, N_spars))
+        self.Spar_ID_Lower = np.zeros((n_ribs, n_spars))
+        self.Spar_Cap_ID_Lower_Left = np.zeros((n_ribs, n_spars))
+        self.Spar_Cap_ID_Lower_Right = np.zeros((n_ribs, n_spars))
+        self.stringer_id_lower = np.zeros((n_ribs, n_stringers_total))
+        self.Spar_ID_Upper = np.zeros((n_ribs, n_spars))
+        self.Spar_Cap_ID_Upper_Left = np.zeros((n_ribs, n_spars))
+        self.Spar_Cap_ID_Upper_Right = np.zeros((n_ribs, n_spars))
+        self.stringer_id_upper = np.zeros((n_ribs, n_stringers_total))
 
-        for i in range(0, N_ribs):
-            for j in range(0, N_spars):
+        for i in range(0, n_ribs):
+            for j in range(0, n_spars):
                 # Lower nodes of spars
-                for k in range(n, 2 * n):
+                for k in range(self.n_nodes, 2 * self.n_nodes):
                     self.adjust_lower_nodes(i, j, k, spars_nodes_x,
                                             self.Spar_ID_Lower)
                     self.adjust_lower_nodes(i, j, k, spar_caps_xl,
                                             self.Spar_Cap_ID_Lower_Left)
                     self.adjust_lower_nodes(i, j, k, spar_caps_xr,
                                             self.Spar_Cap_ID_Lower_Right)
+
                 # Upper nodes of spars
-                for k in range(0, n):
+                for k in range(0, self.n_nodes):
                     self.adjust_upper_nodes(i, j, k, spars_nodes_x,
                                             self.Spar_ID_Upper)
                     self.adjust_upper_nodes(i, j, k, spar_caps_xl,
                                             self.Spar_Cap_ID_Upper_Left)
                     self.adjust_upper_nodes(i, j, k, spar_caps_xr,
                                             self.Spar_Cap_ID_Upper_Right)
+            for j in range(0, n_stringers_total):
+                for k in range(self.n_nodes, 2 * self.n_nodes):
+                    self.adjust_lower_nodes(i, j, k, stringers_x,
+                                            self.stringer_id_lower)
+                for k in range(0, self.n_nodes):
+                    self.adjust_upper_nodes(i, j, k, stringers_x,
+                                            self.stringer_id_upper)
 
     def adjust_lower_nodes(self, i, j, k, desired, id_s):
         """

@@ -90,14 +90,14 @@ class RibsInclined:
     positions to the uCRM_9 wing considering the inclination of ribs.
     """
 
-    def __init__(self, Y_vector, Spars_position, X_origin, Rib_Sections_ID):
-        self.Y_vector = Y_vector
-        self.n = len(Y_vector)
-        self.Front_Spar = Spars_position[1]
-        self.Rear_Spar = Spars_position[-1]
-        self.Elastic_Axis_X = (Spars_position[-1] + Spars_position[0]) / 2
-        self.X_origin = X_origin
-        self.Rib_Sections_ID = Rib_Sections_ID
+    def __init__(self, derived_geometry, parameters):
+
+        self.Y_vector = derived_geometry.Y_list
+        self.n = len(self.Y_vector)
+        spars_position = parameters.spars_position()
+        self.Elastic_Axis_X = (spars_position[-1] + spars_position[0]) / 2
+        self.X_origin = derived_geometry.Origin[:, 0]
+        self.Rib_Sections_ID = derived_geometry.Rib_Sections_ID
 
         self.X = numpy.zeros((self.n, 240))
         self.Y = numpy.zeros((self.n, 240))
@@ -200,8 +200,6 @@ class RibsInclined:
         # Calculation of the elastic axis as
         # the mean between front and rear wing box
         self.Elastic_Axis_X = self.Elastic_Axis_X * self.chords + self.X_origin
-        self.Front_Spar = self.Front_Spar * self.chords
-        self.Rear_Spar = self.Rear_Spar * self.chords
 
         # Calculation of the inclination of the elastic axis:
         # If you want the ribs to be normal to the elastic axis then:
