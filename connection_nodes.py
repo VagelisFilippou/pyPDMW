@@ -7,51 +7,58 @@ class ConnectionNodes:
     """A class for the calculation of the connection nodes."""
 
     def __init__(self, Parameters, XYZ, N_spars):
-        N_ribs = Parameters.N_ribs
-        n = Parameters.n
-        Spar_ID_Lower = XYZ.Spar_ID_Lower
-        Spar_ID_Upper = XYZ.Spar_ID_Upper
-        Spar_Cap_ID_Lower_Left = XYZ.Spar_Cap_ID_Lower_Left
-        Spar_Cap_ID_Upper_Left = XYZ.Spar_Cap_ID_Upper_Left
-        Spar_Cap_ID_Lower_Right = XYZ.Spar_Cap_ID_Lower_Right
-        Spar_Cap_ID_Upper_Right = XYZ.Spar_Cap_ID_Upper_Right
 
         # Initialize matrices for LE and TE storing
-        LE_IDs = np.zeros((N_ribs, 1))
-        TE_IDs_u = np.zeros((N_ribs, 1))
-        TE_IDs_l = np.zeros((N_ribs, 1))
+        self.LE_IDs = np.zeros((Parameters.N_ribs, 1))
+        self.TE_IDs_u = np.zeros((Parameters.N_ribs, 1))
+        self.TE_IDs_l = np.zeros((Parameters.N_ribs, 1))
 
         # Define their values
-        for i in range(0, N_ribs):
-            LE_IDs[i, 0] = (2 * i + 1) * n
-            TE_IDs_u[i, 0] = (2 * i) * n + 1
-            TE_IDs_l[i, 0] = (2 * i + 2) * n
+        self.calculate_le_te_ids(Parameters)
+        # Put the other node ids in the curve arrays
+        self.put_in_arrays(Parameters, XYZ, N_spars)
+        # Insert the TE and LE ids to curve arrays
+        self.insert_le_te(N_spars)
+
+    def put_in_arrays(self, parameters, xyz, n_spars):
 
         # Insert them to the arrays
-        Curve_IDs_Upper = np.zeros((N_ribs, 3 * N_spars))
-        Curve_IDs_Lower = np.zeros((N_ribs, 3 * N_spars))
+        self.Curve_IDs_Upper = np.zeros((parameters.N_ribs, 3 * n_spars))
+        self.Curve_IDs_Lower = np.zeros((parameters.N_ribs, 3 * n_spars))
 
-        for i in range(0, N_ribs):
-            Curve_IDs_Upper[i, :] = - np.sort(- np.concatenate(np.array([
-                                                        Spar_ID_Upper[i, :],
-                                                        Spar_Cap_ID_Upper_Left[i, :],
-                                                        Spar_Cap_ID_Upper_Right[i, :]]
-                                                        )))
-            Curve_IDs_Lower[i, :] = np.sort(np.concatenate(np.array([
-                                                        Spar_ID_Lower[i, :],
-                                                        Spar_Cap_ID_Lower_Left[i, :],
-                                                        Spar_Cap_ID_Lower_Right[i, :]]
-                                                        )))
+        for i in range(0, parameters.N_ribs):
+            self.Curve_IDs_Upper[i, :] =\
+                - np.sort(- np.concatenate(np.array([
+                    xyz.Spar_ID_Upper[i, :],
+                    xyz.Spar_Cap_ID_Upper_Left[i, :],
+                    xyz.Spar_Cap_ID_Upper_Right[i, :]]
+                    )))
+            self.Curve_IDs_Lower[i, :] =\
+                np.sort(np.concatenate(np.array([
+                    xyz.Spar_ID_Lower[i, :],
+                    xyz.Spar_Cap_ID_Lower_Left[i, :],
+                    xyz.Spar_Cap_ID_Lower_Right[i, :]]
+                    )))
 
-        Curve_IDs_Upper = np.insert(Curve_IDs_Upper, 3 * N_spars, TE_IDs_u[:, 0],
-                                    axis=1)
-        Curve_IDs_Upper = np.insert(Curve_IDs_Upper, 0, LE_IDs[:, 0], axis=1)
-        Curve_IDs_Lower = np.insert(Curve_IDs_Lower, 3 * N_spars, TE_IDs_l[:, 0],
-                                    axis=1)
-        Curve_IDs_Lower = np.insert(Curve_IDs_Lower, 0, LE_IDs[:, 0], axis=1)
+    def calculate_le_te_ids(self, parameters):
 
-        self.Curve_IDs_Upper = Curve_IDs_Upper.astype(int)
-        self.Curve_IDs_Lower = Curve_IDs_Lower.astype(int)
-        self.LE_IDs = LE_IDs
-        self.TE_IDs_u = TE_IDs_u
-        self.TE_IDs_l = TE_IDs_l
+        for i in range(0, parameters.N_ribs):
+            self.LE_IDs[i, 0] = (2 * i + 1) * parameters.n
+            self.TE_IDs_u[i, 0] = (2 * i) * parameters.n + 1
+            self.TE_IDs_l[i, 0] = (2 * i + 2) * parameters.n
+
+    def insert_le_te(self, n_spars):
+
+        self.Curve_IDs_Upper =\
+            np.insert(self.Curve_IDs_Upper,
+                      3 * n_spars, self.TE_IDs_u[:, 0], axis=1)
+        self.Curve_IDs_Upper =\
+            np.insert(self.Curve_IDs_Upper, 0, self.LE_IDs[:, 0], axis=1)
+        self.Curve_IDs_Lower =\
+            np.insert(self.Curve_IDs_Lower,
+                      3 * n_spars, self.TE_IDs_l[:, 0], axis=1)
+        self.Curve_IDs_Lower =\
+            np.insert(self.Curve_IDs_Lower, 0, self.LE_IDs[:, 0], axis=1)
+
+        self.Curve_IDs_Upper = self.Curve_IDs_Upper.astype(int)
+        self.Curve_IDs_Lower = self.Curve_IDs_Lower.astype(int)

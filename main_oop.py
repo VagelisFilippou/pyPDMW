@@ -52,10 +52,10 @@ SEMI_SPAN = 29.38
 YB_PERCENT = 0.37  # Yehudi Break in Percent of Semispan
 
 # Define Wing's Structural Parameters
-N_SPARS = 3  # Number of spars
+N_SPARS = 10  # Number of spars
 N_RIBS_CENTRAL = 5  # Number of equally spaced ribs
-N_RIBS_YEHUDI = 5  # Number of equally spaced ribs
-N_RIBS_SEMISPAN = 5  # Number of equally spaced ribs
+N_RIBS_YEHUDI = 10  # Number of equally spaced ribs
+N_RIBS_SEMISPAN = 30  # Number of equally spaced ribs
 
 # List with the location of each spar
 SPARS_POSITION = np.linspace(0.1, 0.7, num=N_SPARS, endpoint=True)
@@ -479,7 +479,7 @@ file.close()
 # Location of .tcl script and run
 TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
                     "Wing_Geometry_Generation.tcl"
-run_argument(TCL_SCRIPT_PATH)
+# run_argument(TCL_SCRIPT_PATH)
 
 # End time counter
 toc = time.perf_counter()

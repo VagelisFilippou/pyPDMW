@@ -32,9 +32,9 @@ class SparsCapsIDs:
         self.Spar_Cap_ID_Upper_Left = np.zeros((N_ribs, N_spars))
         self.Spar_Cap_ID_Upper_Right = np.zeros((N_ribs, N_spars))
 
-        # Lower nodes of spars
         for i in range(0, N_ribs):
             for j in range(0, N_spars):
+                # Lower nodes of spars
                 for k in range(n, 2 * n):
                     self.adjust_lower_nodes(i, j, k, spars_nodes_x,
                                             self.Spar_ID_Lower)
@@ -42,10 +42,7 @@ class SparsCapsIDs:
                                             self.Spar_Cap_ID_Lower_Left)
                     self.adjust_lower_nodes(i, j, k, spar_caps_xr,
                                             self.Spar_Cap_ID_Lower_Right)
-
-        # Upper nodes of spars
-        for i in range(0, N_ribs):
-            for j in range(0, N_spars):
+                # Upper nodes of spars
                 for k in range(0, n):
                     self.adjust_upper_nodes(i, j, k, spars_nodes_x,
                                             self.Spar_ID_Upper)
