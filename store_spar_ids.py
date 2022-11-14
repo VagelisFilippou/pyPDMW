@@ -60,6 +60,14 @@ class SparsCapsIDs:
                 for k in range(0, self.n_nodes):
                     self.adjust_upper_nodes(i, j, k, stringers_x,
                                             self.stringer_id_upper)
+        self.Spar_ID_Lower = self.Spar_ID_Lower.astype(int)
+        self.Spar_Cap_ID_Lower_Left = self.Spar_Cap_ID_Lower_Left.astype(int)
+        self.Spar_Cap_ID_Lower_Right = self.Spar_Cap_ID_Lower_Right.astype(int)
+        self.stringer_id_lower = self.stringer_id_lower.astype(int)
+        self.Spar_ID_Upper = self.Spar_ID_Upper.astype(int)
+        self.Spar_Cap_ID_Upper_Left = self.Spar_Cap_ID_Upper_Left.astype(int)
+        self.Spar_Cap_ID_Upper_Right = self.Spar_Cap_ID_Upper_Right.astype(int)
+        self.stringer_id_upper = self.stringer_id_upper.astype(int)
 
     def adjust_lower_nodes(self, i, j, k, desired, id_s):
         """

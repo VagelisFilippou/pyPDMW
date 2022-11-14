@@ -47,5 +47,5 @@ def run_argument(tcl_script):
     """
     path, hm_loc, hm_batch = check_path()
     tcl_script = path + tcl_script
-    arg = hm_loc + " -tcl " + tcl_script
+    arg = hm_batch + " -tcl " + tcl_script
     subprocess.call(arg)

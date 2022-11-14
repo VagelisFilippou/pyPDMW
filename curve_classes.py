@@ -3,24 +3,26 @@ import numpy as np
 
 class UpperRibCurve:
 
-    def __init__(self, n_1, n_2, ids, curvecounter):
-
+    def __init__(self, n_1, n_2, ids, parameters, curvecounter):
+        n_stringers = len(parameters.stringers_pos())
+        n_stringers_per_sect = parameters.n_stringers
         self.n_1 = n_1
         self.n_2 = n_2
         self.ids = ids
-        self.curves = np.zeros((self.n_1, 3 * self.n_2 + 1))
+        self.curves = np.zeros((self.n_1, 3 * self.n_2 + 1 + n_stringers))
         self.curvecounter = curvecounter
-        self.curves, self.curvecounter = self.write_tcl()
-        self.sections_id = RibCurveIDs(self.curves, self.n_1, self.n_2)
+        self.curves, self.curvecounter = self.write_tcl(n_stringers)
+        self.sections_id = RibCurveIDs(self.curves, self.n_1, self.n_2,
+                                       n_stringers_per_sect)
 
     def list_creation(self, i, j):
         my_list = list(range(self.ids[i, j + 1], self.ids[i, j] + 1))
         return my_list
 
-    def write_tcl(self):
+    def write_tcl(self, n_stringers):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
             for i in range(0, self.n_1):
-                for j in range(0, 3 * self.n_2 + 1):
+                for j in range(0, 3 * self.n_2 + 1 + n_stringers):
                     my_list = self.list_creation(i, j)
                     my_str = ' '.join(map(str, my_list))
                     cmd = "*createlist nodes 1 " + my_str
@@ -35,21 +37,26 @@ class UpperRibCurve:
 
 class RibCurveIDs:
 
-    def __init__(self, curves, n_1, n_2):
+    def __init__(self, curves, n_1, n_2, n_stringers_per_sect):
         # Store the id of each curve type
         self.LE = curves[:, 0]
         self.TE = curves[:, -1]
         self.SC_L = np.zeros((n_1, n_2))
         self.SC_R = np.zeros((n_1, n_2))
-        self.spars = np.zeros((n_1, n_2 - 1))
+        self.main_skin = np.zeros((n_1, n_2 - 1, n_stringers_per_sect + 1))
+        main_skin_sect = np.zeros((n_1, n_stringers_per_sect + 1))
         for i in range(0, n_2):
             if i < n_2 - 1:
-                self.SC_L[:, i] = curves[:, 3 * i + 1]
-                self.SC_R[:, i] = curves[:, 3 * i + 2]
-                self.spars[:, i] = curves[:, 3 * i + 3]
+                self.SC_L[:, i] = curves[:, (3 + n_stringers_per_sect) * i + 1]
+                self.SC_R[:, i] = curves[:, (3 + n_stringers_per_sect) * i + 2]
             elif i == n_2 - 1:
-                self.SC_L[:, i] = curves[:, 3 * i + 1]
-                self.SC_R[:, i] = curves[:, 3 * i + 2]
+                self.SC_L[:, i] = curves[:, (3 + n_stringers_per_sect) * i + 1]
+                self.SC_R[:, i] = curves[:, (3 + n_stringers_per_sect) * i + 2]
+        for k in range(0, n_1):
+            for i in range(0, n_2 - 1):
+                for j in range(0, n_stringers_per_sect + 1):
+                    main_skin_sect[:, j] = curves[:, (3 + n_stringers_per_sect) * i + 3 + j]
+                    self.main_skin[:, i, :] = main_skin_sect
 
 
 class LowerRibCurve(UpperRibCurve):
