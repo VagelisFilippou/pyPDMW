@@ -6,134 +6,99 @@ import numpy as np
 class SparsCapsIDs:
     """A class that inserts the spar and caps coords into the XYZ arrays."""
 
-    def __init__(self,
-                 Spars_And_Spar_Caps,
-                 X,
-                 Y,
-                 Z,
-                 N_ribs,
-                 N_spars,
-                 n):
+    def __init__(self, wing,  derived_geometry, spars_and_spar_caps,
+                 parameters):
 
-        Spars_nodes_X = Spars_And_Spar_Caps.Spars_nodes_X
-        Spar_Caps_XL = Spars_And_Spar_Caps.Spar_Caps_XL
-        Spar_Caps_XR = Spars_And_Spar_Caps.Spar_Caps_XR
+        self.coord_x = wing.X
+        self.coord_y = wing.Y
+        self.coord_z = wing.Z
+        self.n_nodes = derived_geometry.n
 
-        """
-        ### Put the spars' coordinates in the XYZ arrays and store their index:
-        """
+        spars_nodes_x = spars_and_spar_caps.Spars_nodes_X
+        spar_caps_xl = spars_and_spar_caps.Spar_Caps_XL
+        spar_caps_xr = spars_and_spar_caps.Spar_Caps_XR
+        stringers_x = spars_and_spar_caps.stringers_nodes_x
+
+        stringers_position = parameters.stringers_pos()
+        n_stringers_total = len(stringers_position)
+        n_ribs = derived_geometry.N_ribs
+        n_spars = parameters.n_spars
+
         # Initialize ID lists that spar nodes will be stored
-        Spar_ID_Lower = []
-        Spar_ID_Upper = []
-        Spar_Cap_ID_Lower_Left = []
-        Spar_Cap_ID_Upper_Left = []
-        Spar_Cap_ID_Lower_Right = []
-        Spar_Cap_ID_Upper_Right = []
+        self.Spar_ID_Lower = np.zeros((n_ribs, n_spars))
+        self.Spar_Cap_ID_Lower_Left = np.zeros((n_ribs, n_spars))
+        self.Spar_Cap_ID_Lower_Right = np.zeros((n_ribs, n_spars))
+        self.stringer_id_lower = np.zeros((n_ribs, n_stringers_total))
+        self.Spar_ID_Upper = np.zeros((n_ribs, n_spars))
+        self.Spar_Cap_ID_Upper_Left = np.zeros((n_ribs, n_spars))
+        self.Spar_Cap_ID_Upper_Right = np.zeros((n_ribs, n_spars))
+        self.stringer_id_upper = np.zeros((n_ribs, n_stringers_total))
 
-        # Lower nodes of spars
-        for i in range(0, N_ribs):
-            for j in range(0, N_spars):
-                for k in range(n, 2 * n):
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] < Spars_nodes_X[j, i] < X[i, k + 1]:
-                        X[i, k] = Spars_nodes_X[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Z[i, k - 1], Z[i, k + 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Y[i, k - 1], Y[i, k + 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_ID_Lower.append(i * 2 * n + k + 1)
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] < Spar_Caps_XL[j, i] < X[i, k + 1]:
-                        X[i, k] = Spar_Caps_XL[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Z[i, k - 1], Z[i, k + 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Y[i, k - 1], Y[i, k + 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_Cap_ID_Lower_Left.append(i * 2 * n + k + 1)
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] < Spar_Caps_XR[j, i] < X[i, k + 1]:
-                        X[i, k] = Spar_Caps_XR[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Z[i, k - 1], Z[i, k + 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k - 1],
-                                                      X[i, k + 1]],
-                                            [Y[i, k - 1], Y[i, k + 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_Cap_ID_Lower_Right.append(i * 2 * n + k + 1)
-        # Reshape to a matrix for easier handling
-        Spar_ID_Lower = np.array(Spar_ID_Lower)
-        self.Spar_ID_Lower = Spar_ID_Lower.reshape(N_ribs, N_spars)
+        for i in range(0, n_ribs):
+            for j in range(0, n_spars):
+                # Lower nodes of spars
+                for k in range(self.n_nodes, 2 * self.n_nodes):
+                    self.adjust_lower_nodes(i, j, k, spars_nodes_x,
+                                            self.Spar_ID_Lower)
+                    self.adjust_lower_nodes(i, j, k, spar_caps_xl,
+                                            self.Spar_Cap_ID_Lower_Left)
+                    self.adjust_lower_nodes(i, j, k, spar_caps_xr,
+                                            self.Spar_Cap_ID_Lower_Right)
 
-        Spar_Cap_ID_Lower_Left = np.array(Spar_Cap_ID_Lower_Left)
-        self.Spar_Cap_ID_Lower_Left = Spar_Cap_ID_Lower_Left.reshape(N_ribs,
-                                                                     N_spars)
+                # Upper nodes of spars
+                for k in range(0, self.n_nodes):
+                    self.adjust_upper_nodes(i, j, k, spars_nodes_x,
+                                            self.Spar_ID_Upper)
+                    self.adjust_upper_nodes(i, j, k, spar_caps_xl,
+                                            self.Spar_Cap_ID_Upper_Left)
+                    self.adjust_upper_nodes(i, j, k, spar_caps_xr,
+                                            self.Spar_Cap_ID_Upper_Right)
+            for j in range(0, n_stringers_total):
+                for k in range(self.n_nodes, 2 * self.n_nodes):
+                    self.adjust_lower_nodes(i, j, k, stringers_x,
+                                            self.stringer_id_lower)
+                for k in range(0, self.n_nodes):
+                    self.adjust_upper_nodes(i, j, k, stringers_x,
+                                            self.stringer_id_upper)
 
-        Spar_Cap_ID_Lower_Right = np.array(Spar_Cap_ID_Lower_Right)
-        self.Spar_Cap_ID_Lower_Right = Spar_Cap_ID_Lower_Right.reshape(N_ribs,
-                                                                       N_spars)
+    def adjust_lower_nodes(self, i, j, k, desired, id_s):
+        """
+        Put the desired upper coordinates in the XYZ & stores their index:
+        """
+        if k < 2 * self.n_nodes - 1 and \
+                self.coord_x[i, k - 1] < desired[j, i] < self.coord_x[i, k + 1]:
+            self.coord_x[i, k] = desired[j, i]
+            self.coord_z[i, k] = np.interp(self.coord_x[i, k],
+                                           [self.coord_x[i, k - 1],
+                                            self.coord_x[i, k + 1]],
+                                           [self.coord_z[i, k - 1],
+                                            self.coord_z[i, k + 1]])
+            self.coord_y[i, k] = np.interp(self.coord_x[i, k],
+                                           [self.coord_x[i, k - 1],
+                                            self.coord_x[i, k + 1]],
+                                           [self.coord_y[i, k - 1],
+                                            self.coord_y[i, k + 1]])
+            # Store indices
+            # (+1) because of the different indexing of python & HM
+            id_s[i, j] = i * 2 * self.n_nodes + k + 1
 
-        # Upper nodes of spars
-        for i in range(0, N_ribs):
-            for j in range(0, N_spars):
-                for k in range(0, n):
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] > Spars_nodes_X[j, i] > X[i, k + 1]:
-                        X[i, k] = Spars_nodes_X[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Z[i, k + 1], Z[i, k - 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Y[i, k + 1], Y[i, k - 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_ID_Upper.append(i * 2 * n + k + 1)
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] > Spar_Caps_XL[j, i] > X[i, k + 1]:
-                        X[i, k] = Spar_Caps_XL[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Z[i, k + 1], Z[i, k - 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Y[i, k + 1], Y[i, k - 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_Cap_ID_Upper_Left.append(i * 2 * n + k + 1)
-                    if k < 2 * n - 1 and \
-                            X[i, k - 1] > Spar_Caps_XR[j, i] > X[i, k + 1]:
-                        X[i, k] = Spar_Caps_XR[j, i]
-                        Z[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Z[i, k + 1], Z[i, k - 1]])
-                        Y[i, k] = np.interp(X[i, k], [X[i, k + 1],
-                                                      X[i, k - 1]],
-                                            [Y[i, k + 1], Y[i, k - 1]])
-                        # Store indices
-                        # (+1) because of the different indexing of python & HM
-                        Spar_Cap_ID_Upper_Right.append(i * 2 * n + k + 1)
-
-        # Reshape to a matrix for easier handling
-        Spar_ID_Upper = np.array(Spar_ID_Upper)
-        self.Spar_ID_Upper = Spar_ID_Upper.reshape(N_ribs, N_spars)
-
-        Spar_Cap_ID_Upper_Left = np.array(Spar_Cap_ID_Upper_Left)
-        self.Spar_Cap_ID_Upper_Left = Spar_Cap_ID_Upper_Left.reshape(N_ribs,
-                                                                     N_spars)
-
-        Spar_Cap_ID_Upper_Right = np.array(Spar_Cap_ID_Upper_Right)
-        self.Spar_Cap_ID_Upper_Right = Spar_Cap_ID_Upper_Right.reshape(N_ribs,
-                                                                       N_spars)
-        self.X = X
-        self.Y = Y
-        self.Z = Z
+    def adjust_upper_nodes(self, i, j, k, desired, id_s):
+        """
+        Put the desired upper coordinates in the XYZ & stores their index:
+        """
+        if k < 2 * self.n_nodes - 1 and \
+                self.coord_x[i, k - 1] > desired[j, i] > self.coord_x[i, k + 1]:
+            self.coord_x[i, k] = desired[j, i]
+            self.coord_z[i, k] = np.interp(self.coord_x[i, k],
+                                           [self.coord_x[i, k + 1],
+                                            self.coord_x[i, k - 1]],
+                                           [self.coord_z[i, k + 1],
+                                            self.coord_z[i, k - 1]])
+            self.coord_y[i, k] = np.interp(self.coord_x[i, k],
+                                           [self.coord_x[i, k + 1],
+                                            self.coord_x[i, k - 1]],
+                                           [self.coord_y[i, k + 1],
+                                            self.coord_y[i, k - 1]])
+            # Store indices
+            # (+1) because of the different indexing of python & HM
+            id_s[i, j] = i * 2 * self.n_nodes + k + 1

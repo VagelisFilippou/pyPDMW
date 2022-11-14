@@ -90,14 +90,14 @@ class RibsInclined:
     positions to the uCRM_9 wing considering the inclination of ribs.
     """
 
-    def __init__(self, Y_vector, Spars_position, X_origin, Rib_Sections_ID):
-        self.Y_vector = Y_vector
-        self.n = len(Y_vector)
-        self.Front_Spar = Spars_position[1]
-        self.Rear_Spar = Spars_position[-1]
-        self.Elastic_Axis_X = (Spars_position[-1] + Spars_position[0]) / 2
-        self.X_origin = X_origin
-        self.Rib_Sections_ID = Rib_Sections_ID
+    def __init__(self, derived_geometry, parameters):
+
+        self.Y_vector = derived_geometry.Y_list
+        self.n = len(self.Y_vector)
+        spars_position = parameters.spars_position()
+        self.Elastic_Axis_X = (spars_position[-1] + spars_position[0]) / 2
+        self.X_origin = derived_geometry.Origin[:, 0]
+        self.Rib_Sections_ID = derived_geometry.Rib_Sections_ID
 
         self.X = numpy.zeros((self.n, 240))
         self.Y = numpy.zeros((self.n, 240))
@@ -167,7 +167,7 @@ class RibsInclined:
 
     def interpolate(self):
         """
-        It's the method that actualy does the interpolation given the Y vector.
+        It's the method that actually does the interpolation given the Y vector.
 
         Returns
         -------
@@ -186,7 +186,7 @@ class RibsInclined:
         self.chords = numpy.zeros((1, self.n))
         self.twist = numpy.zeros((1, self.n))
 
-        # Linear interpolation to find the coordinates at the deisred Y
+        # Linear interpolation to find the coordinates at the desired Y
         for j in range(0, self.n):
             self.chords[0, j] = numpy.interp(y_[0, j], Wing.y[0, :],
                                              Wing.chord[0, :])
@@ -200,8 +200,6 @@ class RibsInclined:
         # Calculation of the elastic axis as
         # the mean between front and rear wing box
         self.Elastic_Axis_X = self.Elastic_Axis_X * self.chords + self.X_origin
-        self.Front_Spar = self.Front_Spar * self.chords
-        self.Rear_Spar = self.Rear_Spar * self.chords
 
         # Calculation of the inclination of the elastic axis:
         # If you want the ribs to be normal to the elastic axis then:
@@ -227,7 +225,7 @@ class RibsInclined:
         TE_x = numpy.zeros((21, 1))
         TE_y = numpy.zeros((21, 1))
 
-        # Set the coordinates of the non rotated rib line
+        # Set the coordinates of the non-rotated rib line
         for i in range(0, self.n):
             for j in range(0, 2):
                 if j == 0:
@@ -285,7 +283,7 @@ class RibsInclined:
         Z_upper = numpy.zeros((self.n, n_points))
         Z_lower = numpy.zeros((self.n, n_points))
 
-        # Use linear interpolation to find the coordinates of the linspaced x
+        # Use linear interpolation to find the coordinates of the lin-spaced x
         for i in range(0, self.n):
             x = [Rib_x[i, 0], Rib_x[i, 1]]
             y = [Rib_y[i, 0], Rib_y[i, 1]]
@@ -297,7 +295,7 @@ class RibsInclined:
         X = numpy.concatenate(X)
         Y = numpy.concatenate(Y)
 
-        # Concatanate the known coordinates in upper and lower arrays
+        # Concatenate the known coordinates in upper and lower arrays
         x_upper = numpy.concatenate(x_[0:119, :])
         y_upper = numpy.concatenate(y_[0:119, :])
         z_upper = numpy.concatenate(z_[0:119, :])
