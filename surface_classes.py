@@ -106,7 +106,7 @@ class SingleSurfacesFourCurves:
                 my_str = ' '.join(map(str, my_list))
                 cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
                 file.write(cmd)
-                file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
+                file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
                 self.surfacecounter += 1
                 self.surfaces[i, 0] = self.surfacecounter
                 self.componentcounter += 1

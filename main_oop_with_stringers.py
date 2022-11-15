@@ -55,16 +55,16 @@ parameters = Parameters(
     0.37,   # Yehudi break normalized
     3,      # Number of spars
     5,      # Number of central ribs
-    8,      # Number of ribs from fuselage till yehudi break
-    15,     # Number of ribs from yehudi break till semispan
-    0.2,    # front spar position
-    0.6,    # rear spar position
+    10,      # Number of ribs from fuselage till yehudi break
+    25,     # Number of ribs from yehudi break till semispan
+    0.15,    # front spar position
+    0.75,    # rear spar position
     0.1,    # fuselage section normalized
     0.3,    # Root left spar cap width
     0.3,    # Root right spar cap width
     0.1,    # Tip left spar cap width
     0.1,    # Tip right spar cap width
-    3,      # Number of stringers per spar section
+    7,      # Number of stringers per spar section
     0.05    # Stringers tolerance from spar caps
     )
 
@@ -567,7 +567,7 @@ SURFACE_COUNTER = Surfaces_Lower_Skin.surfacecounter
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
-    file.write("*nodecleartempmark\n")
+    # file.write("*nodecleartempmark\n")
 
     # Clean-up the geometry
     my_list = list(range(1, SURFACE_COUNTER + 1))

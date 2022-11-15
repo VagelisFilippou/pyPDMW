@@ -263,9 +263,9 @@ class RibsInclined:
         # intersection and the kink's rib
         New_Angles = numpy.linspace(self.Inclination[self.Rib_Sections_ID[1]
                                                      - 1],
-                                    self.Inclination[idx + 1], idx + 1 -
+                                    self.Inclination[idx + 4], idx + 4 -
                                     (self.Rib_Sections_ID[1] - 1))
-        self.Inclination[self.Rib_Sections_ID[1] - 1: idx + 1] = New_Angles
+        self.Inclination[self.Rib_Sections_ID[1] - 1: idx + 4] = New_Angles
         self.Inclination[- 2] = self.Inclination[- 2] / 2
 
         # Get the coordinates of the intersections for the 1st rotation
