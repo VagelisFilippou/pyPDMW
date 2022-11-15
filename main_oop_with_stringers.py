@@ -30,6 +30,7 @@ from derive_geometry import DerivedGeometry
 from read_crm_data_incl import RibsInclined
 from spar_and_spar_caps_coords import SparsAndCapsCoords
 from store_spar_ids import SparsCapsIDs
+import store_spar_ids_v2
 from connection_nodes import ConnectionNodes
 import curve_classes
 import surface_classes
@@ -94,10 +95,13 @@ Stringers_Y = Spars_And_Spar_Caps.stringers_nodes_y
 # ## Put the spars' coordinates in the xyz arrays and store their index: ###
 
 xyz = SparsCapsIDs(wing,  Derived_Geometry, Spars_And_Spar_Caps, parameters)
+# xyz_v2 = store_spar_ids_v2.SparsCapsIDs(wing,  Derived_Geometry, Spars_And_Spar_Caps, parameters)
 
 X = xyz.coord_x
 Y = xyz.coord_y
 Z = xyz.coord_z
+
+X_X = np.concatenate(X)
 
 Spar_ID_Lower = xyz.Spar_ID_Lower
 Spar_ID_Upper = xyz.Spar_ID_Upper
@@ -245,26 +249,36 @@ Curve_Lower_Right_Spar_Cap =\
                                        curvecounter)
 
 Curve_Upper_Stringers =\
-    curve_classes.SparAndSparCapCurves(N_RIBS - 1,
-                                       N_STRINGERS,
-                                       Stringer_ID_Upper,
-                                       Stringer_ID_Upper,
-                                       Curve_Lower_Right_Spar_Cap.
-                                       curvecounter)
+    curve_classes.StringersCurves(
+        N_RIBS - 1,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Upper,
+        Stringer_ID_Upper,
+        Curve_Lower_Right_Spar_Cap.
+        curvecounter)
 
 Curve_Lower_Stringers =\
-    curve_classes.SparAndSparCapCurves(N_RIBS - 1,
-                                       N_STRINGERS,
-                                       Stringer_ID_Lower,
-                                       Stringer_ID_Lower,
-                                       Curve_Upper_Stringers.
-                                       curvecounter)
+    curve_classes.StringersCurves(
+        N_RIBS - 1,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Lower,
+        Stringer_ID_Lower,
+        Curve_Upper_Stringers.
+        curvecounter)
 
-Curve_Stringer_In_Ribs = curve_classes.MultipleCurves(N_RIBS, N_STRINGERS,
-                                                      Stringer_ID_Upper,
-                                                      Stringer_ID_Lower,
-                                                      Curve_Lower_Stringers.
-                                                      curvecounter)
+Curve_Stringer_In_Ribs = curve_classes.StringersInRibsCurves(
+    N_RIBS,
+    N_STRINGERS,
+    N_SPARS,
+    N_STRINGERS_PER_SECT,
+    Stringer_ID_Upper,
+    Stringer_ID_Lower,
+    Curve_Lower_Stringers.
+    curvecounter)
 
 Surfaces_Left_Spar_Cap_Rib =\
     surface_classes.MultipleSurfaces(
@@ -427,69 +441,147 @@ Surfaces_Lower_Left_Spar_Cap =\
         Surfaces_Lower_Right_Spar_Cap.assemblycounter,
         'Lower_Left_Spar_Cap')
 
-# Surfaces_Main_Rib =\
-#     triple_surface_classes.MultipleSurfaces(
-#         N_RIBS,
-#         N_SPARS - 1,
-#         N_STRINGERS_PER_SECT,
-#         Curve_Upper_Rib.sections_id.main_skin,
-#         Curve_Lower_Rib.sections_id.main_skin,
-#         Curve_Stringer_In_Ribs.curves,
-#         Curve_Stringer_In_Ribs.curves,
-#         Surfaces_Right_Spar_Cap_Rib.surfacecounter,
-#         Surfaces_Right_Spar_Cap_Rib.componentcounter,
-#         Surfaces_Right_Spar_Cap_Rib.assemblycounter,
-#         'Main_Rib')
+Surfaces_Left_Side_Main_Rib =\
+    surface_classes.LeftSideOfMainRibSurfaces(
+        N_RIBS,
+        N_SPARS - 1,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Right_Spar_Cap_In_Ribs.curves,
+        Curve_Stringer_In_Ribs.curves,
+        Surfaces_Lower_Left_Spar_Cap.surfacecounter,
+        Surfaces_Lower_Left_Spar_Cap.componentcounter,
+        Surfaces_Lower_Left_Spar_Cap.assemblycounter,
+        'Main_Rib_Left_Side')
 
-# Surfaces_Upper_Skin =\
-#     surface_classes.SkinSurfaces(
-#         N_RIBS - 1,
-#         N_SPARS - 1,
-#         Curve_Upper_Rib.sections_id.spars,
-#         Curve_Upper_Rib.sections_id.spars,
-#         Curve_Upper_Left_Spar_Cap.curves,
-#         Curve_Upper_Right_Spar_Cap.curves,
-#         Surfaces_Spars.surfacecounter,
-#         Surfaces_Spars.componentcounter,
-#         Surfaces_Spars.assemblycounter,
-#         'Upper_Skin')
+Surfaces_Right_Side_Main_Rib =\
+    surface_classes.RightSideOfMainRibSurfaces(
+        N_RIBS,
+        N_SPARS - 1,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Left_Spar_Cap_In_Ribs.curves,
+        Curve_Stringer_In_Ribs.curves,
+        Surfaces_Left_Side_Main_Rib.surfacecounter,
+        Surfaces_Left_Side_Main_Rib.componentcounter,
+        Surfaces_Left_Side_Main_Rib.assemblycounter,
+        'Main_Rib_Right_Side')
 
-# Surfaces_Lower_Skin =\
-#     surface_classes.SkinSurfaces(
-#         N_RIBS - 1,
-#         N_SPARS - 1,
-#         Curve_Lower_Rib.sections_id.spars,
-#         Curve_Lower_Rib.sections_id.spars,
-#         Curve_Lower_Left_Spar_Cap.curves,
-#         Curve_Lower_Right_Spar_Cap.curves,
-#         Surfaces_Upper_Skin.surfacecounter,
-#         Surfaces_Upper_Skin.componentcounter,
-#         Surfaces_Upper_Skin.assemblycounter,
-#         'Lower_Skin')
-
+Surfaces_Left_Side_Upper_Skin =\
+    surface_classes.LeftSideOfSkins(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Right_Spar_Cap.curves,
+        Curve_Upper_Stringers.curves,
+        Surfaces_Right_Side_Main_Rib.surfacecounter,
+        Surfaces_Right_Side_Main_Rib.componentcounter,
+        Surfaces_Right_Side_Main_Rib.assemblycounter,
+        'Upper_Skin_Left_Side')
 
 
+Surfaces_Left_Side_Lower_Skin =\
+    surface_classes.LeftSideOfSkins(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Right_Spar_Cap.curves,
+        Curve_Lower_Stringers.curves,
+        Surfaces_Left_Side_Upper_Skin.surfacecounter,
+        Surfaces_Left_Side_Upper_Skin.componentcounter,
+        Surfaces_Left_Side_Upper_Skin.assemblycounter,
+        'Lower_Skin_Left_Side')
 
 
-# SURFACE_COUNTER = Surfaces_Rear_Rib.surfacecounter
+Surfaces_Right_Side_Upper_Skin =\
+    surface_classes.RightSideOfSkins(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Left_Spar_Cap.curves,
+        Curve_Upper_Stringers.curves,
+        Surfaces_Left_Side_Lower_Skin.surfacecounter,
+        Surfaces_Left_Side_Lower_Skin.componentcounter,
+        Surfaces_Left_Side_Lower_Skin.assemblycounter,
+        'Upper_Skin_Right_Side')
+
+Surfaces_Right_Side_Lower_Skin =\
+    surface_classes.RightSideOfSkins(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Left_Spar_Cap.curves,
+        Curve_Lower_Stringers.curves,
+        Surfaces_Right_Side_Upper_Skin.surfacecounter,
+        Surfaces_Right_Side_Upper_Skin.componentcounter,
+        Surfaces_Right_Side_Upper_Skin.assemblycounter,
+        'Lower_Skin_Right_Side')
+
+Surfaces_Main_Rib =\
+    triple_surface_classes.MultipleSurfaces(
+        N_RIBS,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Stringer_In_Ribs.curves,
+        Curve_Stringer_In_Ribs.curves,
+        Surfaces_Right_Side_Lower_Skin.surfacecounter,
+        Surfaces_Right_Side_Lower_Skin.componentcounter,
+        Surfaces_Right_Side_Lower_Skin.assemblycounter,
+        'Main_Rib')
+
+Surfaces_Upper_Skin =\
+    triple_surface_classes.MultipleSurfaces(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Stringers.curves,
+        Curve_Upper_Stringers.curves,
+        Surfaces_Main_Rib.surfacecounter,
+        Surfaces_Main_Rib.componentcounter,
+        Surfaces_Main_Rib.assemblycounter,
+        'Upper_Skin')
+
+Surfaces_Lower_Skin =\
+    triple_surface_classes.MultipleSurfaces(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Stringers.curves,
+        Curve_Lower_Stringers.curves,
+        Surfaces_Upper_Skin.surfacecounter,
+        Surfaces_Upper_Skin.componentcounter,
+        Surfaces_Upper_Skin.assemblycounter,
+        'Lower_Skin')
+
+SURFACE_COUNTER = Surfaces_Lower_Skin.surfacecounter
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
     file.write("*nodecleartempmark\n")
 
     # Clean-up the geometry
-    # my_list = list(range(1, SURFACE_COUNTER + 1))
-    # STR_IDS = ' '.join(map(str, my_list))
-    # CMD = "*createmark surfaces 1 " + STR_IDS
-    # file.write(CMD)
-    # file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
+    my_list = list(range(1, SURFACE_COUNTER + 1))
+    STR_IDS = ' '.join(map(str, my_list))
+    CMD = "*createmark surfaces 1 " + STR_IDS
+    file.write(CMD)
+    file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
     # Save the file and close
     file.write("*writefile \"C:/Users/efilippo/Documents/"
-            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
+               "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
     # file.write(
     #        "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
     #        "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-           # )
+    # )
     file.write("return; # Stop script and return to application\n*quit 1;\n")
 file.close()
 

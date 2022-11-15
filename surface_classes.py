@@ -71,42 +71,6 @@ class MultipleSurfaces:
         self.assemblycounter += 1
 
 
-class MainRibSurfaces(MultipleSurfaces):
-    def list_creation(self, i, j):
-        my_list = list((self.ids_1[i, j],
-                        self.ids_2[i, j],
-                        self.ids_3[i, j],
-                        self.ids_4[i, j + 1]))
-        return my_list
-
-
-class SparSurfaces(MultipleSurfaces):
-    def list_creation(self, i, j):
-        my_list = list((self.ids_1[i, j],
-                        self.ids_2[i, j],
-                        self.ids_3[i, j],
-                        self.ids_4[i + 1, j]))
-        return my_list
-
-
-class SkinSurfaces(MultipleSurfaces):
-    def list_creation(self, i, j):
-        my_list = list((self.ids_1[i, j],
-                        self.ids_2[i + 1, j],
-                        self.ids_3[i, j + 1],
-                        self.ids_4[i, j]))
-        return my_list
-
-
-class SparCapsSurfaces(MultipleSurfaces):
-    def list_creation(self, i, j):
-        my_list = list((self.ids_1[i, j],
-                        self.ids_2[i, j],
-                        self.ids_3[i + 1, j],
-                        self.ids_4[i, j]))
-        return my_list
-
-
 class SingleSurfacesFourCurves:
 
     def __init__(self, n_1, ids_1, ids_2, ids_3, ids_4,
@@ -174,6 +138,78 @@ class SingleSurfacesFourCurves:
                 '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
         self.assemblycounter += 1
+
+
+class MainRibSurfaces(MultipleSurfaces):
+    def list_creation(self, i, j):
+        my_list = list((self.ids_1[i, j],
+                        self.ids_2[i, j],
+                        self.ids_3[i, j],
+                        self.ids_4[i, j + 1]))
+        return my_list
+
+
+class SparSurfaces(MultipleSurfaces):
+    def list_creation(self, i, j):
+        my_list = list((self.ids_1[i, j],
+                        self.ids_2[i, j],
+                        self.ids_3[i, j],
+                        self.ids_4[i + 1, j]))
+        return my_list
+
+
+class SkinSurfaces(MultipleSurfaces):
+    def list_creation(self, i, j):
+        my_list = list((self.ids_1[i, j],
+                        self.ids_2[i + 1, j],
+                        self.ids_3[i, j + 1],
+                        self.ids_4[i, j]))
+        return my_list
+
+
+class SparCapsSurfaces(MultipleSurfaces):
+    def list_creation(self, i, j):
+        my_list = list((self.ids_1[i, j],
+                        self.ids_2[i, j],
+                        self.ids_3[i + 1, j],
+                        self.ids_4[i, j]))
+        return my_list
+
+
+class LeftSideOfMainRibSurfaces(MultipleSurfaces):
+    def list_creation(self, i, j):
+        my_list = list((self.ids_1[i, j, 0],
+                        self.ids_2[i, j, 0],
+                        self.ids_3[i, j],
+                        self.ids_4[i, j, 0]))
+        return my_list
+
+
+class RightSideOfMainRibSurfaces(MultipleSurfaces):
+    def list_creation(self, i, j):
+        my_list = list((self.ids_1[i, j, -1],
+                        self.ids_2[i, j, -1],
+                        self.ids_3[i, j + 1],
+                        self.ids_4[i, j, -1]))
+        return my_list
+
+
+class LeftSideOfSkins(MultipleSurfaces):
+    def list_creation(self, i, j):
+        my_list = list((self.ids_1[i, j, 0],
+                        self.ids_2[i + 1, j, 0],
+                        self.ids_3[i, j],
+                        self.ids_4[i, j, 0]))
+        return my_list
+
+
+class RightSideOfSkins(MultipleSurfaces):
+    def list_creation(self, i, j):
+        my_list = list((self.ids_1[i, j, -1],
+                        self.ids_2[i + 1, j, -1],
+                        self.ids_3[i, j + 1],
+                        self.ids_4[i, j, -1]))
+        return my_list
 
 
 class FrontSkins(SingleSurfacesFourCurves):
