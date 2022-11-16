@@ -243,9 +243,9 @@ class RibsInclined:
 
         # Get the coordinates of the intersections for the 1st rotation
         Rib_x, Rib_y, _, _ = self.rib_intersection(
-                                            Rib_line_x, Rib_line_y,
-                                            self.Inclination, LE_x, LE_y, TE_x,
-                                            TE_y)
+            Rib_line_x, Rib_line_y,
+            self.Inclination, LE_x, LE_y, TE_x,
+            TE_y)
 
         # Calculate the id of the first rib that intersects with the kink's rib
         for i in range(0, self.n):
@@ -271,9 +271,9 @@ class RibsInclined:
         # Get the coordinates of the intersections for the 1st rotation
 
         Rib_x, Rib_y, self.Rib_line_x, self.Rib_line_y = self.rib_intersection(
-                                            Rib_line_x, Rib_line_y,
-                                            self.Inclination, LE_x, LE_y, TE_x,
-                                            TE_y)
+            Rib_line_x, Rib_line_y,
+            self.Inclination, LE_x, LE_y, TE_x,
+            TE_y)
 
         # Define the arrays for the coordinates of the rotated ribs n_points
         # must be equal to the those of the database (120 for each curve)

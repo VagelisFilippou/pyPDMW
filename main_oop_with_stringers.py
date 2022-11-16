@@ -30,7 +30,6 @@ from derive_geometry import DerivedGeometry
 from read_crm_data_incl import RibsInclined
 from spar_and_spar_caps_coords import SparsAndCapsCoords
 from store_spar_ids import SparsCapsIDs
-import store_spar_ids_v2
 from connection_nodes import ConnectionNodes
 import curve_classes
 import surface_classes
@@ -53,7 +52,7 @@ delete_files()
 parameters = Parameters(
     29.38,  # Semispan
     0.37,   # Yehudi break normalized
-    3,      # Number of spars
+    2,      # Number of spars
     5,      # Number of central ribs
     10,      # Number of ribs from fuselage till yehudi break
     25,     # Number of ribs from yehudi break till semispan
@@ -64,8 +63,8 @@ parameters = Parameters(
     0.3,    # Root right spar cap width
     0.1,    # Tip left spar cap width
     0.1,    # Tip right spar cap width
-    7,      # Number of stringers per spar section
-    0.05    # Stringers tolerance from spar caps
+    20,      # Number of stringers per spar section
+    0.03    # Stringers tolerance from spar caps
     )
 
 # ################# Derive the Geometry and its' parameters: ##################
@@ -95,7 +94,6 @@ Stringers_Y = Spars_And_Spar_Caps.stringers_nodes_y
 # ## Put the spars' coordinates in the xyz arrays and store their index: ###
 
 xyz = SparsCapsIDs(wing,  Derived_Geometry, Spars_And_Spar_Caps, parameters)
-# xyz_v2 = store_spar_ids_v2.SparsCapsIDs(wing,  Derived_Geometry, Spars_And_Spar_Caps, parameters)
 
 X = xyz.coord_x
 Y = xyz.coord_y
@@ -134,6 +132,7 @@ plt.scatter(Stringers_X, Stringers_Y, 5, marker='o')
 # ################# Writing in Command file: ##################
 
 # Initialization of counters
+NODE_COUNTER = 0
 CURVE_COUNTER = 0
 SURFACE_COUNTER = 0
 COMPONENT_COUNTER = 1  # =1 because of the initial component
@@ -153,6 +152,31 @@ with open('Wing_Geometry_Generation.tcl', 'w') as file:
             # Nodes
             file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
                        % (X[i, j], Y[i, j], Z[i, j]))
+            NODE_COUNTER += 1
+    X_Y_Z = np.array((np.concatenate(X),
+                      np.concatenate(Y),
+                      np.concatenate(Z)),
+                     )
+    H = 0.08
+
+    Stringer_ID_Upper_Extend = np.zeros((N_RIBS, N_STRINGERS))
+    Stringer_ID_Lower_Extend = np.zeros((N_RIBS, N_STRINGERS))
+    for i in range(0, N_RIBS):
+        for j in range(0, N_STRINGERS):
+            file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+                       % (X_Y_Z[0, Stringer_ID_Upper[i, j] - 1],
+                          X_Y_Z[1, Stringer_ID_Upper[i, j] - 1],
+                          X_Y_Z[2, Stringer_ID_Upper[i, j] - 1] - H))
+            NODE_COUNTER += 1
+            Stringer_ID_Upper_Extend[i, j] = NODE_COUNTER
+
+            file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+                       % (X_Y_Z[0, Stringer_ID_Lower[i, j] - 1],
+                          X_Y_Z[1, Stringer_ID_Lower[i, j] - 1],
+                          X_Y_Z[2, Stringer_ID_Lower[i, j] - 1] + H))
+            NODE_COUNTER += 1
+            Stringer_ID_Lower_Extend[i, j] = NODE_COUNTER
+
 file.close()
 
 
@@ -256,8 +280,7 @@ Curve_Upper_Stringers =\
         N_STRINGERS_PER_SECT,
         Stringer_ID_Upper,
         Stringer_ID_Upper,
-        Curve_Lower_Right_Spar_Cap.
-        curvecounter)
+        Curve_Lower_Right_Spar_Cap.curvecounter)
 
 Curve_Lower_Stringers =\
     curve_classes.StringersCurves(
@@ -267,18 +290,37 @@ Curve_Lower_Stringers =\
         N_STRINGERS_PER_SECT,
         Stringer_ID_Lower,
         Stringer_ID_Lower,
-        Curve_Upper_Stringers.
-        curvecounter)
+        Curve_Upper_Stringers.curvecounter)
 
-Curve_Stringer_In_Ribs = curve_classes.StringersInRibsCurves(
-    N_RIBS,
-    N_STRINGERS,
-    N_SPARS,
-    N_STRINGERS_PER_SECT,
-    Stringer_ID_Upper,
-    Stringer_ID_Lower,
-    Curve_Lower_Stringers.
-    curvecounter)
+Curve_Stringer_In_Ribs =\
+    curve_classes.StringersInRibsCurves(
+        N_RIBS,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Upper,
+        Stringer_ID_Lower,
+        Curve_Lower_Stringers.curvecounter)
+
+Curve_Upper_Stringers_Extend =\
+    curve_classes.StringersCurves(
+        N_RIBS - 1,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Upper_Extend,
+        Stringer_ID_Upper_Extend,
+        Curve_Stringer_In_Ribs.curvecounter)
+
+Curve_Lower_Stringers_Extend =\
+    curve_classes.StringersCurves(
+        N_RIBS - 1,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Lower_Extend,
+        Stringer_ID_Lower_Extend,
+        Curve_Upper_Stringers_Extend.curvecounter)
 
 Surfaces_Left_Spar_Cap_Rib =\
     surface_classes.MultipleSurfaces(
@@ -563,11 +605,35 @@ Surfaces_Lower_Skin =\
         Surfaces_Upper_Skin.assemblycounter,
         'Lower_Skin')
 
-SURFACE_COUNTER = Surfaces_Lower_Skin.surfacecounter
+Surfaces_Upper_Stringers =\
+    triple_surface_classes.StringerSurfaces(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Upper_Stringers.curves,
+        Curve_Upper_Stringers_Extend.curves,
+        Surfaces_Lower_Skin.surfacecounter,
+        Surfaces_Lower_Skin.componentcounter,
+        Surfaces_Lower_Skin.assemblycounter,
+        'Upper_Stringers')
+
+Surfaces_Lower_Stringers =\
+    triple_surface_classes.StringerSurfaces(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Lower_Stringers.curves,
+        Curve_Lower_Stringers_Extend.curves,
+        Surfaces_Upper_Stringers.surfacecounter,
+        Surfaces_Upper_Stringers.componentcounter,
+        Surfaces_Upper_Stringers.assemblycounter,
+        'Lower_Stringers')
+
+SURFACE_COUNTER = Surfaces_Lower_Stringers.surfacecounter
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
-    # file.write("*nodecleartempmark\n")
+    file.write("*nodecleartempmark\n")
 
     # Clean-up the geometry
     my_list = list(range(1, SURFACE_COUNTER + 1))
@@ -586,7 +652,6 @@ with open('Wing_Geometry_Generation.tcl', 'a+') as file:
 file.close()
 
 # ################# Running the Command file: ##################
-
 
 # Location of .tcl script and run
 TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
