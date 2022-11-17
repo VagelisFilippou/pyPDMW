@@ -40,9 +40,10 @@ class Airfoil:
                        'uCRM-9_wr%.0f_profile.txt' % self.percent
         with open(airfoil_path, 'r') as infile:
             x_airfoil, z_airfoil = numpy.loadtxt(infile, unpack=True)
-            # Modify the TE of Lower curve to match the upper (sharp TE)
-            x_airfoil[-1] = x_airfoil[0]
-            z_airfoil[-1] = z_airfoil[0]
+        infile.close()
+        # Modify the TE of Lower curve to match the upper (sharp TE)
+        x_airfoil[-1] = x_airfoil[0]
+        z_airfoil[-1] = z_airfoil[0]
         # Rotate the coordinates of airfoil
         x = x_airfoil * math.cos(self.twist) - z_airfoil * math.sin(self.twist)
         z = z_airfoil * math.cos(self.twist) + x_airfoil * math.sin(self.twist)
