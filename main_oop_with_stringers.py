@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 from wing_parameters import Parameters
 from derive_geometry import DerivedGeometry
 from read_crm_data_incl import RibsInclined
+from find_inclination import RibsOrientation
 from spar_and_spar_caps_coords import SparsAndCapsCoords
 from store_spar_ids import SparsCapsIDs
 from connection_nodes import ConnectionNodes
@@ -55,7 +56,7 @@ parameters = Parameters(
     2,      # Number of spars
     5,      # Number of central ribs
     5,      # Number of ribs from fuselage till yehudi break
-    5,     # Number of ribs from yehudi break till semispan
+    10,     # Number of ribs from yehudi break till semispan
     0.15,    # front spar position
     0.75,    # rear spar position
     0.1,    # fuselage section normalized
@@ -71,6 +72,7 @@ parameters = Parameters(
 
 Derived_Geometry = DerivedGeometry(parameters)
 wing = RibsInclined(Derived_Geometry, parameters)
+inclination = RibsOrientation(Derived_Geometry, parameters)
 
 N_RIBS = Derived_Geometry.N_ribs
 N_SPARS = parameters.n_spars
@@ -656,7 +658,7 @@ file.close()
 # Location of .tcl script and run
 TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
                     "Wing_Geometry_Generation.tcl"
-run_argument(TCL_SCRIPT_PATH)
+# run_argument(TCL_SCRIPT_PATH)
 
 # End time counter
 toc = time.perf_counter()
