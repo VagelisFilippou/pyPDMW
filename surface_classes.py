@@ -271,3 +271,45 @@ class RearRib(SingleSurfacesThreeCurves):
                         self.ids_3[i, -1],
                         ))
         return my_list
+
+
+class CutRibHoles:
+    def __init__(self, ids_1, ids_2, n_1, n_2):
+        self.ids_1 = ids_1.astype(int)
+        self.ids_2 = ids_2.astype(int)
+        self.write_tcl(n_1, n_2)
+
+    def list_creation_1(self, i, j):
+        my_list = range(self.ids_1[i, j, 0],
+                        self.ids_1[i, j, -1] + 1)
+        return my_list
+
+    def list_creation_2(self, i, j):
+        my_list = range(self.ids_2[i, j, 0],
+                        self.ids_2[i, j, -1] + 1)
+        return my_list
+
+        # *createmark surfaces 1 755 754
+        # *createmark lines 2 3138
+        # *createvector 1 0 1 0
+        # *surfacemarksplitwithlines 1 2 1 9 0
+
+    def write_tcl(self, n_1, n_2):
+        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+            for i in range(0, n_1):
+                for j in range(0, n_2 - 1):
+                    my_list = self.list_creation_1(i, j)
+                    my_str = ' '.join(map(str, my_list))
+                    cmd = "*createmark surfaces 1 " + my_str
+                    my_list = self.list_creation_2(i, j)
+                    my_str = ' '.join(map(str, my_list))
+                    file.write(cmd)
+                    file.write('\n*createmark lines 2 ' + my_str +
+                               '\n*createvector 1 0 1 0\n'
+                               '*surfacemarksplitwithlines 1 2 1 9 0\n')
+                    # file.write('*createmarklast surfaces 1'
+                    #            '*deletemark surfaces 1')
+                    # file.write('set node1 [hm_latestentityid surfaces]\n'
+                    #             'set dat [open "surfaces.txt" a+]\n'
+                    #             'puts $dat [format "%.0f" $node1]')
+        file.close()

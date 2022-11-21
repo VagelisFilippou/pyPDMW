@@ -45,6 +45,8 @@ def read_oml():
         zinit[i, 0] = front[i, 2] - dz
         xinit[i, 0] = front[i, 0] + dx
 
+    print(zinit[0])
+    print(xinit[0])
     z_origin = zinit - zinit[0]
     x_origin = xinit - xinit[0]
     y_origin = front[:, 1]

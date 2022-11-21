@@ -51,12 +51,12 @@ delete_files()
 
 # See the wing_parameters.py file for more info about the parameters
 parameters = Parameters(
-    29.38,  # Semispan
+    29.38,  # Semi-span
     0.37,   # Yehudi break normalized
-    2,      # Number of spars
+    3,      # Number of spars
     5,      # Number of central ribs
     5,      # Number of ribs from fuselage till yehudi break
-    10,     # Number of ribs from yehudi break till semispan
+    10,     # Number of ribs from yehudi break till semi-span
     0.15,    # front spar position
     0.75,    # rear spar position
     0.1,    # fuselage section normalized
@@ -64,7 +64,7 @@ parameters = Parameters(
     0.3,    # Root right spar cap width
     0.1,    # Tip left spar cap width
     0.1,    # Tip right spar cap width
-    3,      # Number of stringers per spar section
+    8,      # Number of stringers per spar section
     0.03    # Stringers tolerance from spar caps
     )
 
@@ -323,6 +323,24 @@ Curve_Lower_Stringers_Extend =\
         Stringer_ID_Lower_Extend,
         Stringer_ID_Lower_Extend,
         Curve_Upper_Stringers_Extend.curvecounter)
+
+Curve_Rib_Holes_Upper =\
+    curve_classes.CirclesForStringers(
+        N_RIBS,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Upper,
+        Curve_Lower_Stringers_Extend.curvecounter)\
+
+Curve_Rib_Holes_Lower =\
+    curve_classes.CirclesForStringers(
+        N_RIBS,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Lower,
+        Curve_Rib_Holes_Upper.curvecounter)
 
 Surfaces_Left_Spar_Cap_Rib =\
     surface_classes.MultipleSurfaces(
@@ -631,6 +649,18 @@ Surfaces_Lower_Stringers =\
         Surfaces_Upper_Stringers.assemblycounter,
         'Lower_Stringers')
 
+# surface_classes.CutRibHoles(
+#     Surfaces_Main_Rib.surfaces,
+#     Curve_Rib_Holes_Upper.curves,
+#     N_RIBS,
+#     N_SPARS)
+
+# surface_classes.CutRibHoles(
+#     Surfaces_Main_Rib.surfaces,
+#     Curve_Rib_Holes_Lower.curves,
+#     N_RIBS,
+#     N_SPARS)
+
 SURFACE_COUNTER = Surfaces_Lower_Stringers.surfacecounter
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
@@ -644,12 +674,12 @@ with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     file.write(CMD)
     file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
     # Save the file and close
-    file.write("*writefile \"C:/Users/efilippo/Documents/"
-               "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
-    # file.write(
-    #        "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-    #        "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-    # )
+    # file.write("*writefile \"C:/Users/efilippo/Documents/"
+    #            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
+    file.write(
+            "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
+    )
     file.write("return; # Stop script and return to application\n*quit 1;\n")
 file.close()
 
@@ -658,7 +688,7 @@ file.close()
 # Location of .tcl script and run
 TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
                     "Wing_Geometry_Generation.tcl"
-# run_argument(TCL_SCRIPT_PATH)
+run_argument(TCL_SCRIPT_PATH)
 
 # End time counter
 toc = time.perf_counter()

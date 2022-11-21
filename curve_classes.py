@@ -161,3 +161,35 @@ class StringersCurves(StringersInRibsCurves):
     def list_creation(self, i, j):
         my_list = list((self.ids_1[i, j], self.ids_2[i + 1, j]))
         return my_list
+
+
+class CirclesForStringers:
+    def __init__(self, n_1, n_2, N_SPARS, N_STRINGERS_PER_SECT,
+                 ids_1, curvecounter):
+        self.n_1 = n_1
+        self.n_2 = n_2
+        self.ids_1 = ids_1
+        self.curves = np.zeros((self.n_1, self.n_2))
+        self.curvecounter = curvecounter
+        self.curves, self.curvecounter = self.write_tcl()
+        self.reshape_curves(N_SPARS, N_STRINGERS_PER_SECT)
+
+    def write_tcl(self):
+        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+            for i in range(0, self.n_1):
+                for j in range(0, self.n_2):
+                    cmd = '*createlist nodes 1 %.0f' % (self.ids_1[i, j])
+                    file.write(cmd)
+                    file.write("\n*createvector 1 0 1 0\n"
+                               "*createcirclefromcenterradius 1 1 0.08 360 0\n")
+                    self.curvecounter += 1
+                    self.curves_indexing(i, j)
+        file.close()
+        return self.curves, self.curvecounter
+
+    def curves_indexing(self, i, j):
+        self.curves[i, j] = self.curvecounter
+
+    def reshape_curves(self, N_SPARS, N_STRINGERS_PER_SECT):
+        self.curves = self.curves[..., np.newaxis]
+        self.curves.shape = (self.n_1, N_SPARS - 1, N_STRINGERS_PER_SECT)

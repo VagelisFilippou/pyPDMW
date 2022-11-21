@@ -1,4 +1,4 @@
-""" This script contains the dataclass for the wing's parameters"""
+""" This is a module that contains the dataclass for the wing's parameters"""
 from dataclasses import dataclass
 import numpy as np
 
@@ -6,10 +6,10 @@ import numpy as np
 @dataclass
 class Parameters:
     """
-    It's a dataclass for storing the values of the paramaeters of the wing
+    It's a dataclass for storing the values of the parameters of the wing
     """
     semi_span: float
-    # Yehudi Break in Percent of Semispan
+    # Yehudi Break in Percent of Semi-span
     yb_percent: float
     # Define Wing's Structural Derived_Geometry
     n_spars: int
@@ -18,7 +18,7 @@ class Parameters:
     n_ribs_semispan: int
     front_spar_position: float  # the location of each spar normalized
     rear_spar_position: float  # the location of each spar normalized
-    # Specify the length of the fuselage wingbox
+    # Specify the length of the fuselage wing-box
     fslg_section_percent: float
     # Define two widths per spar at the root and at the tip:
     root_l: float
@@ -31,7 +31,7 @@ class Parameters:
 
     # List with the location of each spar
     def spars_position(self):
-        """Linspace for the spars' position"""
+        """Lin-space for the spars' position"""
         spars_position = np.linspace(self.front_spar_position,
                                      self.rear_spar_position,
                                      num=self.n_spars,
@@ -45,7 +45,7 @@ class Parameters:
         return sc_widths
 
     def stringers_pos(self):
-        """Linspace for the spars' position"""
+        """Lin-space for the spars' position"""
         stringers_position = np.zeros((self.n_spars - 1, self.n_stringers))
         spars_pos = self.spars_position()
         for i in range(0, self.n_spars - 1):
