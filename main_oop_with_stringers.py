@@ -726,6 +726,12 @@ Surfaces_Lower_Stringers_L =\
 
 SURFACE_COUNTER = Surfaces_Lower_Stringers_L.surface_counter
 
+# For rib's holes
+# Create circles in each of the stringer point with a radius equal to stringers height
+# *createlist nodes 1 69 49 29
+# *createvector 1 0 1 0
+# *createcirclefromcenterradius 1 1 0.08 360 0
+
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
     file.write("*nodecleartempmark\n")
