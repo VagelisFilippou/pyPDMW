@@ -6,21 +6,21 @@ import numpy as np
 class ConnectionNodes:
     """A class for the calculation of the connection nodes."""
 
-    def __init__(self, Parameters, XYZ, N_spars, N_stringers):
+    def __init__(self, parameters, x_y_z, n_spars, n_stringers):
 
         # Initialize matrices for LE and TE storing
-        self.LE_IDs = np.zeros((Parameters.N_ribs, 1))
-        self.TE_IDs_u = np.zeros((Parameters.N_ribs, 1))
-        self.TE_IDs_l = np.zeros((Parameters.N_ribs, 1))
+        self.LE_IDs = np.zeros((parameters.N_ribs, 1))
+        self.TE_IDs_u = np.zeros((parameters.N_ribs, 1))
+        self.TE_IDs_l = np.zeros((parameters.N_ribs, 1))
 
         # Define their values
-        self.calculate_le_te_ids(Parameters)
+        self.calculate_le_te_ids(parameters)
         # Put the other node ids in the curve arrays
-        self.put_in_arrays(Parameters, XYZ, N_spars, N_stringers)
+        self.put_in_arrays(parameters, x_y_z, n_spars, n_stringers)
         # Insert the TE and LE ids to curve arrays
-        self.insert_le_te(N_spars, N_stringers)
+        self.insert_le_te(n_spars, n_stringers)
 
-    def put_in_arrays(self, parameters, xyz, n_spars, n_stringers):
+    def put_in_arrays(self, parameters, x_y_z, n_spars, n_stringers):
         # Insert them to the arrays
         self.Curve_IDs_Upper =\
             np.zeros((parameters.N_ribs,
@@ -32,17 +32,17 @@ class ConnectionNodes:
         for i in range(0, parameters.N_ribs):
             self.Curve_IDs_Upper[i, :] =\
                 - np.sort(- np.concatenate((
-                    xyz.Spar_ID_Upper[i, :],
-                    xyz.Spar_Cap_ID_Upper_Left[i, :],
-                    xyz.Spar_Cap_ID_Upper_Right[i, :],
-                    xyz.stringer_id_upper[i, :]
+                    x_y_z.Spar_ID_Upper[i, :],
+                    x_y_z.Spar_Cap_ID_Upper_Left[i, :],
+                    x_y_z.Spar_Cap_ID_Upper_Right[i, :],
+                    x_y_z.stringer_id_upper[i, :]
                     )))
             self.Curve_IDs_Lower[i, :] =\
                 np.sort(np.concatenate((
-                    xyz.Spar_ID_Lower[i, :],
-                    xyz.Spar_Cap_ID_Lower_Left[i, :],
-                    xyz.Spar_Cap_ID_Lower_Right[i, :],
-                    xyz.stringer_id_lower[i, :]
+                    x_y_z.Spar_ID_Lower[i, :],
+                    x_y_z.Spar_Cap_ID_Lower_Left[i, :],
+                    x_y_z.Spar_Cap_ID_Lower_Right[i, :],
+                    x_y_z.stringer_id_lower[i, :]
                     )))
         self.Curve_IDs_Upper = self.Curve_IDs_Upper.astype(int)
         self.Curve_IDs_Lower = self.Curve_IDs_Lower.astype(int)
@@ -69,15 +69,3 @@ class ConnectionNodes:
         # Make them integers
         self.Curve_IDs_Upper = self.Curve_IDs_Upper.astype(int)
         self.Curve_IDs_Lower = self.Curve_IDs_Lower.astype(int)
-
-
-def sortRowWise(m):
-    # One by one sort individual rows.
-    for i in range(len(m)):
-        m[i].sort()
-        # printing the sorted matrix
-        for i in range(len(m)):
-            for j in range(len(m[i])):
-                print(m[i][j], end=" ")
-                print()
-    return 0

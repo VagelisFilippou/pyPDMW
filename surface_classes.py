@@ -3,7 +3,7 @@ import numpy as np
 
 class MultipleSurfaces:
     def __init__(self, n_1, n_2, ids_1, ids_2, ids_3, ids_4,
-                 surfacecounter, componentcounter, assemblycounter,
+                 surface_counter, component_counter, assembly_counter,
                  components_name):
 
         self.n_1 = n_1
@@ -16,9 +16,9 @@ class MultipleSurfaces:
 
         self.surfaces = np.zeros((self.n_1, self.n_2))
         self.components = np.zeros((self.n_1, 1))
-        self.surfacecounter = surfacecounter
-        self.componentcounter = componentcounter
-        self.assemblycounter = assemblycounter
+        self.surface_counter = surface_counter
+        self.component_counter = component_counter
+        self.assembly_counter = assembly_counter
         self.components_name = components_name
         self.write_tcl()
 
@@ -38,10 +38,10 @@ class MultipleSurfaces:
                     cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
                     file.write(cmd)
                     file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
-                    self.surfacecounter += 1
-                    self.surfaces[i, j] = self.surfacecounter
-                self.componentcounter += 1
-                self.components[i, 0] = self.componentcounter
+                    self.surface_counter += 1
+                    self.surfaces[i, j] = self.surface_counter
+                self.component_counter += 1
+                self.components[i, 0] = self.component_counter
                 file.write('*createentity comps name="'
                            + self.components_name + '_%.0f"\n'
                            % (i + 1))
@@ -62,19 +62,19 @@ class MultipleSurfaces:
             file.write(
                 '*startnotehistorystate {Modified Components of assembly}\n')
             file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assemblycounter,
+                       % (self.assembly_counter,
                           self.components[0, 0],
                           self.components[-1, 0]))
             file.write(
                 '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assemblycounter += 1
+        self.assembly_counter += 1
 
 
 class SingleSurfacesFourCurves:
 
     def __init__(self, n_1, ids_1, ids_2, ids_3, ids_4,
-                 surfacecounter, componentcounter, assemblycounter,
+                 surface_counter, component_counter, assembly_counter,
                  components_name):
 
         self.n_1 = n_1
@@ -86,9 +86,9 @@ class SingleSurfacesFourCurves:
 
         self.surfaces = np.zeros((self.n_1, 1))
         self.components = np.zeros((self.n_1, 1))
-        self.surfacecounter = surfacecounter
-        self.componentcounter = componentcounter
-        self.assemblycounter = assemblycounter
+        self.surface_counter = surface_counter
+        self.component_counter = component_counter
+        self.assembly_counter = assembly_counter
         self.components_name = components_name
         self.write_tcl()
 
@@ -107,10 +107,10 @@ class SingleSurfacesFourCurves:
                 cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
                 file.write(cmd)
                 file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
-                self.surfacecounter += 1
-                self.surfaces[i, 0] = self.surfacecounter
-                self.componentcounter += 1
-                self.components[i, 0] = self.componentcounter
+                self.surface_counter += 1
+                self.surfaces[i, 0] = self.surface_counter
+                self.component_counter += 1
+                self.components[i, 0] = self.component_counter
                 file.write('*createentity comps name="'
                            + self.components_name + '_%.0f"\n'
                            % (i + 1))
@@ -131,13 +131,13 @@ class SingleSurfacesFourCurves:
             file.write(
                 '*startnotehistorystate {Modified Components of assembly}\n')
             file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assemblycounter,
+                       % (self.assembly_counter,
                           self.components[0, 0],
                           self.components[-1, 0]))
             file.write(
                 '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assemblycounter += 1
+        self.assembly_counter += 1
 
 
 class MainRibSurfaces(MultipleSurfaces):
@@ -235,7 +235,7 @@ class RearSkins(SingleSurfacesFourCurves):
 class SingleSurfacesThreeCurves(SingleSurfacesFourCurves):
 
     def __init__(self, n_1, ids_1, ids_2, ids_3,
-                 surfacecounter, componentcounter, assemblycounter,
+                 surface_counter, component_counter, assembly_counter,
                  components_name):
 
         self.n_1 = n_1
@@ -246,9 +246,9 @@ class SingleSurfacesThreeCurves(SingleSurfacesFourCurves):
 
         self.surfaces = np.zeros((self.n_1, 1))
         self.components = np.zeros((self.n_1, 1))
-        self.surfacecounter = surfacecounter
-        self.componentcounter = componentcounter
-        self.assemblycounter = assemblycounter
+        self.surface_counter = surface_counter
+        self.component_counter = component_counter
+        self.assembly_counter = assembly_counter
         self.components_name = components_name
         self.write_tcl()
 
@@ -289,11 +289,6 @@ class CutRibHoles:
                         self.ids_2[i, j, -1] + 1)
         return my_list
 
-        # *createmark surfaces 1 755 754
-        # *createmark lines 2 3138
-        # *createvector 1 0 1 0
-        # *surfacemarksplitwithlines 1 2 1 9 0
-
     def write_tcl(self, n_1, n_2):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
             for i in range(0, n_1):
@@ -307,9 +302,4 @@ class CutRibHoles:
                     file.write('\n*createmark lines 2 ' + my_str +
                                '\n*createvector 1 0 1 0\n'
                                '*surfacemarksplitwithlines 1 2 1 9 0\n')
-                    # file.write('*createmarklast surfaces 1'
-                    #            '*deletemark surfaces 1')
-                    # file.write('set node1 [hm_latestentityid surfaces]\n'
-                    #             'set dat [open "surfaces.txt" a+]\n'
-                    #             'puts $dat [format "%.0f" $node1]')
         file.close()

@@ -3,15 +3,15 @@ import numpy as np
 
 class UpperRibCurve:
 
-    def __init__(self, n_1, n_2, ids, parameters, curvecounter):
+    def __init__(self, n_1, n_2, ids, parameters, curve_counter):
         n_stringers = len(parameters.stringers_pos())
         n_stringers_per_sect = parameters.n_stringers
         self.n_1 = n_1
         self.n_2 = n_2
         self.ids = ids
         self.curves = np.zeros((self.n_1, 3 * self.n_2 + 1 + n_stringers))
-        self.curvecounter = curvecounter
-        self.curves, self.curvecounter = self.write_tcl(n_stringers)
+        self.curve_counter = curve_counter
+        self.curves, self.curve_counter = self.write_tcl(n_stringers)
         self.sections_id = RibCurveIDs(self.curves, self.n_1, self.n_2,
                                        n_stringers_per_sect)
 
@@ -29,10 +29,10 @@ class UpperRibCurve:
                     file.write(cmd)
                     file.write("\n*createvector 1 1 0 0\n*createvector 2 1 0 0"
                                "\n*linecreatespline nodes 1 0 0 1 2\n")
-                    self.curvecounter += 1
-                    self.curves[i, j] = self.curvecounter
+                    self.curve_counter += 1
+                    self.curves[i, j] = self.curve_counter
         file.close()
-        return self.curves, self.curvecounter
+        return self.curves, self.curve_counter
 
 
 class RibCurveIDs:
@@ -67,14 +67,14 @@ class LowerRibCurve(UpperRibCurve):
 
 class LeadingTrailingEdgeCurves:
 
-    def __init__(self, n_1, n_2, ids, curvecounter):
+    def __init__(self, n_1, n_2, ids, curve_counter):
 
         self.n_1 = n_1
         self.n_2 = n_2
         self.ids = ids
         self.curves = np.zeros((self.n_1 - 1, self.n_2))
-        self.curvecounter = curvecounter
-        self.curves, self.curvecounter = self.write_tcl()
+        self.curve_counter = curve_counter
+        self.curves, self.curve_counter = self.write_tcl()
 
     def list_creation(self, i):
         my_list = [self.ids[i, 0], self.ids[i + 1, 0]]
@@ -88,23 +88,23 @@ class LeadingTrailingEdgeCurves:
                 cmd = "*createlist nodes 1 " + my_str
                 file.write(cmd)
                 file.write("\n*linecreatefromnodes 1 0 150 5 179\n")
-                self.curvecounter += 1
-                self.curves[i, 0] = self.curvecounter
+                self.curve_counter += 1
+                self.curves[i, 0] = self.curve_counter
         file.close()
-        return self.curves, self.curvecounter
+        return self.curves, self.curve_counter
 
 
 class MultipleCurves:
 
-    def __init__(self, n_1, n_2, ids_1, ids_2, curvecounter):
+    def __init__(self, n_1, n_2, ids_1, ids_2, curve_counter):
 
         self.n_1 = n_1
         self.n_2 = n_2
         self.ids_1 = ids_1
         self.ids_2 = ids_2
         self.curves = np.zeros((self.n_1, self.n_2))
-        self.curvecounter = curvecounter
-        self.curves, self.curvecounter = self.write_tcl()
+        self.curve_counter = curve_counter
+        self.curves, self.curve_counter = self.write_tcl()
         self.reshape_curves()
 
     def list_creation(self, i, j):
@@ -121,13 +121,13 @@ class MultipleCurves:
                     file.write(cmd)
                     file.write("\n*createvector 1 1 0 0\n*createvector 2 1 0 0"
                                "\n*linecreatespline nodes 1 0 0 1 2\n")
-                    self.curvecounter += 1
+                    self.curve_counter += 1
                     self.curves_indexing(i, j)
         file.close()
-        return self.curves, self.curvecounter
+        return self.curves, self.curve_counter
 
     def curves_indexing(self, i, j):
-        self.curves[i, j] = self.curvecounter
+        self.curves[i, j] = self.curve_counter
 
     def reshape_curves(self):
         pass
@@ -140,21 +140,21 @@ class SparAndSparCapCurves(MultipleCurves):
 
 
 class StringersInRibsCurves(MultipleCurves):
-    def __init__(self, n_1, n_2, N_SPARS, N_STRINGERS_PER_SECT,
-                 ids_1, ids_2, curvecounter):
+    def __init__(self, n_1, n_2, n_spars, n_stringers_per_sect,
+                 ids_1, ids_2, curve_counter):
 
         self.n_1 = n_1
         self.n_2 = n_2
         self.ids_1 = ids_1
         self.ids_2 = ids_2
         self.curves = np.zeros((self.n_1, self.n_2))
-        self.curvecounter = curvecounter
-        self.curves, self.curvecounter = self.write_tcl()
-        self.reshape_curves(N_SPARS, N_STRINGERS_PER_SECT)
+        self.curve_counter = curve_counter
+        self.curves, self.curve_counter = self.write_tcl()
+        self.reshape_curves(n_spars, n_stringers_per_sect)
 
-    def reshape_curves(self, N_SPARS, N_STRINGERS_PER_SECT):
+    def reshape_curves(self, n_spars, n_stringers_per_sect):
         self.curves = self.curves[..., np.newaxis]
-        self.curves.shape = (self.n_1, N_SPARS - 1, N_STRINGERS_PER_SECT)
+        self.curves.shape = (self.n_1, n_spars - 1, n_stringers_per_sect)
 
 
 class StringersCurves(StringersInRibsCurves):
@@ -164,15 +164,15 @@ class StringersCurves(StringersInRibsCurves):
 
 
 class CirclesForStringers:
-    def __init__(self, n_1, n_2, N_SPARS, N_STRINGERS_PER_SECT,
-                 ids_1, curvecounter):
+    def __init__(self, n_1, n_2, n_spars, n_stringers_per_sect,
+                 ids_1, curve_counter):
         self.n_1 = n_1
         self.n_2 = n_2
         self.ids_1 = ids_1
         self.curves = np.zeros((self.n_1, self.n_2))
-        self.curvecounter = curvecounter
-        self.curves, self.curvecounter = self.write_tcl()
-        self.reshape_curves(N_SPARS, N_STRINGERS_PER_SECT)
+        self.curve_counter = curve_counter
+        self.curves, self.curve_counter = self.write_tcl()
+        self.reshape_curves(n_spars, n_stringers_per_sect)
 
     def write_tcl(self):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
@@ -182,14 +182,14 @@ class CirclesForStringers:
                     file.write(cmd)
                     file.write("\n*createvector 1 0 1 0\n"
                                "*createcirclefromcenterradius 1 1 0.08 360 0\n")
-                    self.curvecounter += 1
+                    self.curve_counter += 1
                     self.curves_indexing(i, j)
         file.close()
-        return self.curves, self.curvecounter
+        return self.curves, self.curve_counter
 
     def curves_indexing(self, i, j):
-        self.curves[i, j] = self.curvecounter
+        self.curves[i, j] = self.curve_counter
 
-    def reshape_curves(self, N_SPARS, N_STRINGERS_PER_SECT):
+    def reshape_curves(self, n_spars, n_stringers_per_sect):
         self.curves = self.curves[..., np.newaxis]
-        self.curves.shape = (self.n_1, N_SPARS - 1, N_STRINGERS_PER_SECT)
+        self.curves.shape = (self.n_1, n_spars - 1, n_stringers_per_sect)

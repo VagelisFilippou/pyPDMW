@@ -2,7 +2,7 @@
 A script for the OML calculation of the uCRM-9 wing.
 
 Advices:
-- You must have a 'Resources/uCRM_9/uCRM_9_Coord.txt' path containing the
+- You must have a 'Resources/uCRM_9/uCRM_9_Coord.txt' path containing
 the coordinates that I have calculate for the leading and trailing edge
 
 """

@@ -10,7 +10,7 @@ import numpy as np
 
 class MultipleSurfaces:
     def __init__(self, n_1, n_2, n_3, ids_1, ids_2, ids_3, ids_4,
-                 surfacecounter, componentcounter, assemblycounter,
+                 surface_counter, component_counter, assembly_counter,
                  components_name):
 
         self.n_1 = n_1
@@ -24,9 +24,9 @@ class MultipleSurfaces:
 
         self.surfaces = np.zeros((self.n_1, self.n_2, self.n_3 - 1))
         self.components = np.zeros((self.n_1, 1))
-        self.surfacecounter = surfacecounter
-        self.componentcounter = componentcounter
-        self.assemblycounter = assemblycounter
+        self.surface_counter = surface_counter
+        self.component_counter = component_counter
+        self.assembly_counter = assembly_counter
         self.components_name = components_name
         self.write_tcl()
 
@@ -48,10 +48,10 @@ class MultipleSurfaces:
                             cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
                             file.write(cmd)
                             file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
-                            self.surfacecounter += 1
-                            self.surfaces[i, j, k - 1] = self.surfacecounter
-                self.componentcounter += 1
-                self.components[i, 0] = self.componentcounter
+                            self.surface_counter += 1
+                            self.surfaces[i, j, k - 1] = self.surface_counter
+                self.component_counter += 1
+                self.components[i, 0] = self.component_counter
                 file.write('*createentity comps name="'
                            + self.components_name + '_%.0f"\n'
                            % (i + 1))
@@ -72,18 +72,18 @@ class MultipleSurfaces:
             file.write(
                 '*startnotehistorystate {Modified Components of assembly}\n')
             file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assemblycounter,
+                       % (self.assembly_counter,
                           self.components[0, 0],
                           self.components[-1, 0]))
             file.write(
                 '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assemblycounter += 1
+        self.assembly_counter += 1
 
 
 class StringerSurfaces(MultipleSurfaces):
     def __init__(self, n_1, n_2, n_3, ids_1, ids_2,
-                 surfacecounter, componentcounter, assemblycounter,
+                 surface_counter, component_counter, assembly_counter,
                  components_name):
 
         self.n_1 = n_1
@@ -95,9 +95,9 @@ class StringerSurfaces(MultipleSurfaces):
 
         self.surfaces = np.zeros((self.n_1, self.n_2, self.n_3))
         self.components = np.zeros((self.n_1, 1))
-        self.surfacecounter = surfacecounter
-        self.componentcounter = componentcounter
-        self.assemblycounter = assemblycounter
+        self.surface_counter = surface_counter
+        self.component_counter = component_counter
+        self.assembly_counter = assembly_counter
         self.components_name = components_name
         self.write_tcl()
 
@@ -117,10 +117,10 @@ class StringerSurfaces(MultipleSurfaces):
                         cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
                         file.write(cmd)
                         file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
-                        self.surfacecounter += 1
-                        self.surfaces[i, j, k] = self.surfacecounter
-                self.componentcounter += 1
-                self.components[i, 0] = self.componentcounter
+                        self.surface_counter += 1
+                        self.surfaces[i, j, k] = self.surface_counter
+                self.component_counter += 1
+                self.components[i, 0] = self.component_counter
                 file.write('*createentity comps name="'
                            + self.components_name + '_%.0f"\n'
                            % (i + 1))
@@ -141,10 +141,10 @@ class StringerSurfaces(MultipleSurfaces):
             file.write(
                 '*startnotehistorystate {Modified Components of assembly}\n')
             file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assemblycounter,
+                       % (self.assembly_counter,
                           self.components[0, 0],
                           self.components[-1, 0]))
             file.write(
                 '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assemblycounter += 1
+        self.assembly_counter += 1
