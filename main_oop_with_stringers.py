@@ -25,6 +25,7 @@ Advices:
 
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 from wing_parameters import Parameters
 from derive_geometry import DerivedGeometry
 from read_crm_data_incl import RibsInclined
@@ -37,7 +38,7 @@ import surface_classes
 import triple_surface_classes
 from run_arg import run_argument
 from delete_files import delete_files
-import numpy as np
+
 # Set counter
 tic = time.perf_counter()
 
@@ -55,8 +56,8 @@ parameters = Parameters(
     0.37,   # Yehudi break normalized
     3,      # Number of spars
     5,      # Number of central ribs
-    5,      # Number of ribs from fuselage till yehudi break
-    10,     # Number of ribs from yehudi break till semi-span
+    10,      # Number of ribs from fuselage till yehudi break
+    30,     # Number of ribs from yehudi break till semi-span
     0.15,    # front spar position
     0.75,    # rear spar position
     0.1,    # fuselage section normalized
@@ -160,9 +161,13 @@ with open('Wing_Geometry_Generation.tcl', 'w') as file:
                       np.concatenate(Z)),
                      )
     H = 0.08
+    L = 0.05
 
     Stringer_ID_Upper_Extend = np.zeros((N_RIBS, N_STRINGERS))
     Stringer_ID_Lower_Extend = np.zeros((N_RIBS, N_STRINGERS))
+    Stringer_ID_Upper_Extend_L = np.zeros((N_RIBS, N_STRINGERS))
+    Stringer_ID_Lower_Extend_L = np.zeros((N_RIBS, N_STRINGERS))
+
     for i in range(0, N_RIBS):
         for j in range(0, N_STRINGERS):
             file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
@@ -173,11 +178,25 @@ with open('Wing_Geometry_Generation.tcl', 'w') as file:
             Stringer_ID_Upper_Extend[i, j] = NODE_COUNTER
 
             file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+                       % (X_Y_Z[0, Stringer_ID_Upper[i, j] - 1] + L,
+                          X_Y_Z[1, Stringer_ID_Upper[i, j] - 1],
+                          X_Y_Z[2, Stringer_ID_Upper[i, j] - 1] - H))
+            NODE_COUNTER += 1
+            Stringer_ID_Upper_Extend_L[i, j] = NODE_COUNTER
+
+            file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
                        % (X_Y_Z[0, Stringer_ID_Lower[i, j] - 1],
                           X_Y_Z[1, Stringer_ID_Lower[i, j] - 1],
                           X_Y_Z[2, Stringer_ID_Lower[i, j] - 1] + H))
             NODE_COUNTER += 1
             Stringer_ID_Lower_Extend[i, j] = NODE_COUNTER
+
+            file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+                       % (X_Y_Z[0, Stringer_ID_Lower[i, j] - 1] + L,
+                          X_Y_Z[1, Stringer_ID_Lower[i, j] - 1],
+                          X_Y_Z[2, Stringer_ID_Lower[i, j] - 1] + H))
+            NODE_COUNTER += 1
+            Stringer_ID_Lower_Extend_L[i, j] = NODE_COUNTER
 
 file.close()
 
@@ -323,6 +342,26 @@ Curve_Lower_Stringers_Extend =\
         Stringer_ID_Lower_Extend,
         Stringer_ID_Lower_Extend,
         Curve_Upper_Stringers_Extend.curve_counter)
+
+Curve_Upper_Stringers_Extend_L =\
+    curve_classes.StringersCurves(
+        N_RIBS - 1,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Upper_Extend_L,
+        Stringer_ID_Upper_Extend_L,
+        Curve_Lower_Stringers_Extend.curve_counter)
+
+Curve_Lower_Stringers_Extend_L =\
+    curve_classes.StringersCurves(
+        N_RIBS - 1,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Lower_Extend_L,
+        Stringer_ID_Lower_Extend_L,
+        Curve_Upper_Stringers_Extend_L.curve_counter)
 
 Curve_Rib_Holes_Upper =\
     curve_classes.CirclesForStringers(
@@ -637,6 +676,18 @@ Surfaces_Upper_Stringers =\
         Surfaces_Lower_Skin.assembly_counter,
         'Upper_Stringers')
 
+Surfaces_Upper_Stringers_L =\
+    triple_surface_classes.StringerSurfaces(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Upper_Stringers_Extend.curves,
+        Curve_Upper_Stringers_Extend_L.curves,
+        Surfaces_Upper_Stringers.surface_counter,
+        Surfaces_Upper_Stringers.component_counter,
+        Surfaces_Upper_Stringers.assembly_counter,
+        'Upper_Stringers_L')
+
 Surfaces_Lower_Stringers =\
     triple_surface_classes.StringerSurfaces(
         N_RIBS - 1,
@@ -644,10 +695,22 @@ Surfaces_Lower_Stringers =\
         N_STRINGERS_PER_SECT,
         Curve_Lower_Stringers.curves,
         Curve_Lower_Stringers_Extend.curves,
-        Surfaces_Upper_Stringers.surface_counter,
-        Surfaces_Upper_Stringers.component_counter,
-        Surfaces_Upper_Stringers.assembly_counter,
+        Surfaces_Upper_Stringers_L.surface_counter,
+        Surfaces_Upper_Stringers_L.component_counter,
+        Surfaces_Upper_Stringers_L.assembly_counter,
         'Lower_Stringers')
+
+Surfaces_Lower_Stringers_L =\
+    triple_surface_classes.StringerSurfaces(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Lower_Stringers_Extend.curves,
+        Curve_Lower_Stringers_Extend_L.curves,
+        Surfaces_Lower_Stringers.surface_counter,
+        Surfaces_Lower_Stringers.component_counter,
+        Surfaces_Lower_Stringers.assembly_counter,
+        'Lower_Stringers_L')
 
 # surface_classes.CutRibHoles(
 #     Surfaces_Main_Rib.surfaces,
@@ -661,11 +724,11 @@ Surfaces_Lower_Stringers =\
 #     N_RIBS,
 #     N_SPARS)
 
-SURFACE_COUNTER = Surfaces_Lower_Stringers.surface_counter
+SURFACE_COUNTER = Surfaces_Lower_Stringers_L.surface_counter
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
-    # file.write("*nodecleartempmark\n")
+    file.write("*nodecleartempmark\n")
 
     # Clean-up the geometry
     my_list = list(range(1, SURFACE_COUNTER + 1))
