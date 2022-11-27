@@ -73,7 +73,7 @@ parameters = Parameters(
 
 Derived_Geometry = DerivedGeometry(parameters)
 wing = RibsInclined(Derived_Geometry, parameters)
-inclination = RibsOrientation(Derived_Geometry, parameters)
+# inclination = RibsOrientation(Derived_Geometry, parameters)
 
 N_RIBS = Derived_Geometry.N_ribs
 N_SPARS = parameters.n_spars
@@ -751,7 +751,7 @@ file.close()
 # Location of .tcl script and run
 TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
                     "Wing_Geometry_Generation.tcl"
-run_argument(TCL_SCRIPT_PATH)
+# run_argument(TCL_SCRIPT_PATH)
 
 # End time counter
 toc = time.perf_counter()

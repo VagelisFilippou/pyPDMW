@@ -43,29 +43,37 @@ class DerivedGeometry:
         ### Calculate positions in Y and the origins: ###
         """
         # Initialize a list to put the Y positions of each rib
-        self.Y_list = []
+        Y_list = []
 
         # Calculate the positions and append them to the list
         for i in range(0, parameters.n_ribs_central):
-            self.Y_list.append(i * self.Ribs_Spacing_central)
+            Y_list.append(i * self.Ribs_Spacing_central)
         for i in range(0, parameters.n_ribs_yehudi):
-            self.Y_list.append((i + 1) * self.Ribs_Spacing_yehudi +
-                               self.Y_list[self.Rib_Sections_ID[0] - 1])
+            Y_list.append((i + 1) * self.Ribs_Spacing_yehudi +
+                          Y_list[self.Rib_Sections_ID[0] - 1])
         for i in range(0, parameters.n_ribs_semispan):
-            self.Y_list.append((i + 1) * self.Ribs_Spacing_semispan +
-                               self.Y_list[self.Rib_Sections_ID[1] - 1])
+            Y_list.append((i + 1) * self.Ribs_Spacing_semispan +
+                          Y_list[self.Rib_Sections_ID[1] - 1])
+
+        self.Y_list = np.zeros((self.N_ribs, 3))
+        self.Y_list[:, 0] = Y_list
+        self.Y_list[:, 1] = self.Y_list[:, 0] + 0.03
+        self.Y_list[:, 2] = self.Y_list[:, 0] - 0.03
+        self.Y_list[-1, 1] = self.Y_list[-1, 0]
+        self.Y_list[0, 2] = self.Y_list[0, 0]
 
         # Read the origins of each airfoil (from the data)
         x_origin, y_origin, z_origin, _, _ = read_oml()
 
         # Initialize an array that will contain the origins of the ribs
-        self.Origin = np.zeros((self.N_ribs, 3))
-        self.Origin[:, 2] = self.Y_list
-
+        self.Origin = np.zeros((3, self.N_ribs, 3))
+        self.Origin[0, :, 2] = self.Y_list[:, 0]
+        self.Origin[1, :, 2] = self.Y_list[:, 1]
+        self.Origin[2, :, 2] = self.Y_list[:, 2]
         # Find their x and z coordinates by interpolation
-        self.Origin[:, 0] = np.interp(self.Origin[:, 2],
-                                      y_origin[:],
-                                      x_origin[:, 0])
-        self.Origin[:, 1] = np.interp(self.Origin[:, 2],
-                                      y_origin[:],
-                                      z_origin[:, 0])
+        self.Origin[:, :, 0] = np.interp(self.Origin[:, :, 2],
+                                         y_origin[:],
+                                         x_origin[:, 0])
+        self.Origin[:, :, 1] = np.interp(self.Origin[:, :, 2],
+                                         y_origin[:],
+                                         z_origin[:, 0])
