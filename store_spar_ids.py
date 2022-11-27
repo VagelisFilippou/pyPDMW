@@ -24,7 +24,7 @@ class SparsCapsIDs:
         n_ribs = derived_geometry.N_ribs
         n_spars = parameters.n_spars
 
-        # Initialize ID lists that spar nodes will be stored
+        # Initialize ID arrays that spar nodes will be stored
         self.Spar_ID_Lower = np.zeros((n_ribs, n_spars))
         self.Spar_Cap_ID_Lower_Left = np.zeros((n_ribs, n_spars))
         self.Spar_Cap_ID_Lower_Right = np.zeros((n_ribs, n_spars))
