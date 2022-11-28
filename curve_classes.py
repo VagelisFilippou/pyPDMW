@@ -162,7 +162,6 @@ class StringersCurves(StringersInRibsCurves):
         my_list = list((self.ids_1[i, j], self.ids_2[i + 1, j]))
         return my_list
 
-
 class CirclesForStringers:
     def __init__(self, n_1, n_2, n_spars, n_stringers_per_sect,
                  ids_1, curve_counter):

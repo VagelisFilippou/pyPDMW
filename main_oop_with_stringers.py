@@ -147,18 +147,19 @@ with open('Wing_Geometry_Generation.tcl', 'w') as file:
     file.write('*toleranceset 0.01\n')
 
     # Now print nodes in this format: *createnode x y z system id 0 0
-    for i in range(0, N_RIBS):
-        for j in range(0, 2 * NUMBER_OF_NODES):
-            # Free point
-            # f.write('*createpoint %.7f %.7f %.7f 0\n'
-            #         % (X[i, j], Y[i, j], Z[i, j]))
-            # Nodes
-            file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
-                       % (X[i, j], Y[i, j], Z[i, j]))
-            NODE_COUNTER += 1
-    X_Y_Z = np.array((np.concatenate(X),
-                      np.concatenate(Y),
-                      np.concatenate(Z)),
+    for k in range(0, 3):
+        for i in range(0, N_RIBS):
+            for j in range(0, 2 * NUMBER_OF_NODES):
+                # Free point
+                # f.write('*createpoint %.7f %.7f %.7f 0\n'
+                #         % (X[i, j], Y[i, j], Z[i, j]))
+                # Nodes
+                file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+                           % (X[k, i, j], Y[k, i, j], Z[k, i, j]))
+                NODE_COUNTER += 1
+    X_Y_Z = np.array((np.concatenate(X[0, :, :]),
+                      np.concatenate(Y[0, :, :]),
+                      np.concatenate(Z[0, :, :])),
                      )
     H = 0.08
     L = 0.05
@@ -171,30 +172,30 @@ with open('Wing_Geometry_Generation.tcl', 'w') as file:
     for i in range(0, N_RIBS):
         for j in range(0, N_STRINGERS):
             file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
-                       % (X_Y_Z[0, Stringer_ID_Upper[i, j] - 1],
-                          X_Y_Z[1, Stringer_ID_Upper[i, j] - 1],
-                          X_Y_Z[2, Stringer_ID_Upper[i, j] - 1] - H))
+                       % (X_Y_Z[0, Stringer_ID_Upper[0, i, j] - 1],
+                          X_Y_Z[1, Stringer_ID_Upper[0, i, j] - 1],
+                          X_Y_Z[2, Stringer_ID_Upper[0, i, j] - 1] - H))
             NODE_COUNTER += 1
             Stringer_ID_Upper_Extend[i, j] = NODE_COUNTER
 
             file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
-                       % (X_Y_Z[0, Stringer_ID_Upper[i, j] - 1] + L,
-                          X_Y_Z[1, Stringer_ID_Upper[i, j] - 1],
-                          X_Y_Z[2, Stringer_ID_Upper[i, j] - 1] - H))
+                       % (X_Y_Z[0, Stringer_ID_Upper[0, i, j] - 1] + L,
+                          X_Y_Z[1, Stringer_ID_Upper[0, i, j] - 1],
+                          X_Y_Z[2, Stringer_ID_Upper[0, i, j] - 1] - H))
             NODE_COUNTER += 1
             Stringer_ID_Upper_Extend_L[i, j] = NODE_COUNTER
 
             file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
-                       % (X_Y_Z[0, Stringer_ID_Lower[i, j] - 1],
-                          X_Y_Z[1, Stringer_ID_Lower[i, j] - 1],
-                          X_Y_Z[2, Stringer_ID_Lower[i, j] - 1] + H))
+                       % (X_Y_Z[0, Stringer_ID_Lower[0, i, j] - 1],
+                          X_Y_Z[1, Stringer_ID_Lower[0, i, j] - 1],
+                          X_Y_Z[2, Stringer_ID_Lower[0, i, j] - 1] + H))
             NODE_COUNTER += 1
             Stringer_ID_Lower_Extend[i, j] = NODE_COUNTER
 
             file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
-                       % (X_Y_Z[0, Stringer_ID_Lower[i, j] - 1] + L,
-                          X_Y_Z[1, Stringer_ID_Lower[i, j] - 1],
-                          X_Y_Z[2, Stringer_ID_Lower[i, j] - 1] + H))
+                       % (X_Y_Z[0, Stringer_ID_Lower[0, i, j] - 1] + L,
+                          X_Y_Z[1, Stringer_ID_Lower[0, i, j] - 1],
+                          X_Y_Z[2, Stringer_ID_Lower[0, i, j] - 1] + H))
             NODE_COUNTER += 1
             Stringer_ID_Lower_Extend_L[i, j] = NODE_COUNTER
 
@@ -203,93 +204,93 @@ file.close()
 
 Curve_Upper_Rib = curve_classes.UpperRibCurve(N_RIBS,
                                               N_SPARS,
-                                              Curve_IDs_Upper,
+                                              Curve_IDs_Upper[0, :, :],
                                               parameters,
                                               CURVE_COUNTER)
 Curve_Lower_Rib = curve_classes.LowerRibCurve(N_RIBS,
                                               N_SPARS,
-                                              Curve_IDs_Lower,
+                                              Curve_IDs_Lower[0, :, :],
                                               parameters,
                                               Curve_Upper_Rib.curve_counter)
 
 Curve_Leading_Edge = curve_classes.LeadingTrailingEdgeCurves(N_RIBS,
                                                              1,
-                                                             LE_IDs,
+                                                             LE_IDs[0, :, :],
                                                              Curve_Lower_Rib
                                                              .curve_counter)
 
 Curve_Trailing_Edge =\
     curve_classes.LeadingTrailingEdgeCurves(N_RIBS,
                                             1,
-                                            TE_IDs_u,
+                                            TE_IDs_u[0, :, :],
                                             Curve_Leading_Edge
                                             .curve_counter)
 
 Curve_Spar_In_Ribs = curve_classes.MultipleCurves(N_RIBS, N_SPARS,
-                                                  Spar_ID_Upper,
-                                                  Spar_ID_Lower,
+                                                  Spar_ID_Upper[0, :, :],
+                                                  Spar_ID_Lower[0, :, :],
                                                   Curve_Trailing_Edge.
                                                   curve_counter)
 
 Curve_Left_Spar_Cap_In_Ribs =\
     curve_classes.MultipleCurves(N_RIBS, N_SPARS,
-                                 Spar_Cap_ID_Lower_Left,
-                                 Spar_Cap_ID_Upper_Left,
+                                 Spar_Cap_ID_Lower_Left[0, :, :],
+                                 Spar_Cap_ID_Upper_Left[0, :, :],
                                  Curve_Spar_In_Ribs.
                                  curve_counter)
 
 Curve_Right_Spar_Cap_In_Ribs =\
     curve_classes.MultipleCurves(N_RIBS, N_SPARS,
-                                 Spar_Cap_ID_Lower_Right,
-                                 Spar_Cap_ID_Upper_Right,
+                                 Spar_Cap_ID_Lower_Right[0, :, :],
+                                 Spar_Cap_ID_Upper_Right[0, :, :],
                                  Curve_Left_Spar_Cap_In_Ribs.
                                  curve_counter)
 
 Curve_Upper_Spar =\
     curve_classes.SparAndSparCapCurves(N_RIBS - 1,
                                        N_SPARS,
-                                       Spar_ID_Upper,
-                                       Spar_ID_Upper,
+                                       Spar_ID_Upper[0, :, :],
+                                       Spar_ID_Upper[0, :, :],
                                        Curve_Right_Spar_Cap_In_Ribs.
                                        curve_counter)
 
 Curve_Lower_Spar =\
     curve_classes.SparAndSparCapCurves(N_RIBS - 1,
                                        N_SPARS,
-                                       Spar_ID_Lower,
-                                       Spar_ID_Lower,
+                                       Spar_ID_Lower[0, :, :],
+                                       Spar_ID_Lower[0, :, :],
                                        Curve_Upper_Spar.
                                        curve_counter)
 
 Curve_Upper_Left_Spar_Cap =\
     curve_classes.SparAndSparCapCurves(N_RIBS - 1,
                                        N_SPARS,
-                                       Spar_Cap_ID_Upper_Left,
-                                       Spar_Cap_ID_Upper_Left,
+                                       Spar_Cap_ID_Upper_Left[0, :, :],
+                                       Spar_Cap_ID_Upper_Left[0, :, :],
                                        Curve_Lower_Spar.
                                        curve_counter)
 
 Curve_Lower_Left_Spar_Cap =\
     curve_classes.SparAndSparCapCurves(N_RIBS - 1,
                                        N_SPARS,
-                                       Spar_Cap_ID_Lower_Left,
-                                       Spar_Cap_ID_Lower_Left,
+                                       Spar_Cap_ID_Lower_Left[0, :, :],
+                                       Spar_Cap_ID_Lower_Left[0, :, :],
                                        Curve_Upper_Left_Spar_Cap.
                                        curve_counter)
 
 Curve_Upper_Right_Spar_Cap =\
     curve_classes.SparAndSparCapCurves(N_RIBS - 1,
                                        N_SPARS,
-                                       Spar_Cap_ID_Upper_Right,
-                                       Spar_Cap_ID_Upper_Right,
+                                       Spar_Cap_ID_Upper_Right[0, :, :],
+                                       Spar_Cap_ID_Upper_Right[0, :, :],
                                        Curve_Lower_Left_Spar_Cap.
                                        curve_counter)
 
 Curve_Lower_Right_Spar_Cap =\
     curve_classes.SparAndSparCapCurves(N_RIBS - 1,
                                        N_SPARS,
-                                       Spar_Cap_ID_Lower_Right,
-                                       Spar_Cap_ID_Lower_Right,
+                                       Spar_Cap_ID_Lower_Right[0, :, :],
+                                       Spar_Cap_ID_Lower_Right[0, :, :],
                                        Curve_Upper_Right_Spar_Cap.
                                        curve_counter)
 
@@ -299,8 +300,8 @@ Curve_Upper_Stringers =\
         N_STRINGERS,
         N_SPARS,
         N_STRINGERS_PER_SECT,
-        Stringer_ID_Upper,
-        Stringer_ID_Upper,
+        Stringer_ID_Upper[0, :, :],
+        Stringer_ID_Upper[0, :, :],
         Curve_Lower_Right_Spar_Cap.curve_counter)
 
 Curve_Lower_Stringers =\
@@ -309,8 +310,8 @@ Curve_Lower_Stringers =\
         N_STRINGERS,
         N_SPARS,
         N_STRINGERS_PER_SECT,
-        Stringer_ID_Lower,
-        Stringer_ID_Lower,
+        Stringer_ID_Lower[0, :, :],
+        Stringer_ID_Lower[0, :, :],
         Curve_Upper_Stringers.curve_counter)
 
 Curve_Stringer_In_Ribs =\
@@ -319,8 +320,8 @@ Curve_Stringer_In_Ribs =\
         N_STRINGERS,
         N_SPARS,
         N_STRINGERS_PER_SECT,
-        Stringer_ID_Upper,
-        Stringer_ID_Lower,
+        Stringer_ID_Upper[0, :, :],
+        Stringer_ID_Lower[0, :, :],
         Curve_Lower_Stringers.curve_counter)
 
 Curve_Upper_Stringers_Extend =\
@@ -363,23 +364,58 @@ Curve_Lower_Stringers_Extend_L =\
         Stringer_ID_Lower_Extend_L,
         Curve_Upper_Stringers_Extend_L.curve_counter)
 
-Curve_Rib_Holes_Upper =\
-    curve_classes.CirclesForStringers(
-        N_RIBS,
-        N_STRINGERS,
-        N_SPARS,
-        N_STRINGERS_PER_SECT,
-        Stringer_ID_Upper,
-        Curve_Lower_Stringers_Extend.curve_counter)\
+shape_of_array = np.shape(Curve_IDs_Upper)
 
-Curve_Rib_Holes_Lower =\
-    curve_classes.CirclesForStringers(
-        N_RIBS,
-        N_STRINGERS,
-        N_SPARS,
-        N_STRINGERS_PER_SECT,
-        Stringer_ID_Lower,
-        Curve_Rib_Holes_Upper.curve_counter)
+Curve_Rib_Stiffener_Y_Upper_1 =\
+    curve_classes.MultipleCurves(
+        N_RIBS - 1,
+        shape_of_array[2],
+        Curve_IDs_Upper[0, :-1, :],
+        Curve_IDs_Upper[1, :-1, :],
+        Curve_Lower_Stringers_Extend_L.curve_counter)
+
+Curve_Rib_Stiffener_Y_Upper_2 =\
+    curve_classes.MultipleCurves(
+        N_RIBS - 1,
+        shape_of_array[2],
+        Curve_IDs_Upper[0, 1:, :],
+        Curve_IDs_Upper[2, 1:, :],
+        Curve_Rib_Stiffener_Y_Upper_1.curve_counter)
+
+Curve_Rib_Stiffener_Y_Lower_1 =\
+    curve_classes.MultipleCurves(
+        N_RIBS - 1,
+        shape_of_array[2],
+        Curve_IDs_Lower[0, :-1, :],
+        Curve_IDs_Lower[1, :-1, :],
+        Curve_Rib_Stiffener_Y_Upper_2.curve_counter)
+
+Curve_Rib_Stiffener_Y_Lower_2 =\
+    curve_classes.MultipleCurves(
+        N_RIBS - 1,
+        shape_of_array[2],
+        Curve_IDs_Lower[0, 1:, :],
+        Curve_IDs_Lower[2, 1:, :],
+        Curve_Rib_Stiffener_Y_Lower_1.curve_counter)
+
+# Curve_Rib_Holes_Upper =\
+#     curve_classes.CirclesForStringers(
+#         N_RIBS,
+#         N_STRINGERS,
+#         N_SPARS,
+#         N_STRINGERS_PER_SECT,
+#         Stringer_ID_Upper,
+#         Curve_Lower_Stringers_Extend.curve_counter)\
+
+# Curve_Rib_Holes_Lower =\
+#     curve_classes.CirclesForStringers(
+#         N_RIBS,
+#         N_STRINGERS,
+#         N_SPARS,
+#         N_STRINGERS_PER_SECT,
+#         Stringer_ID_Lower,
+#         Curve_Rib_Holes_Upper.curve_counter)
+
 
 Surfaces_Left_Spar_Cap_Rib =\
     surface_classes.MultipleSurfaces(
@@ -712,6 +748,54 @@ Surfaces_Lower_Stringers_L =\
         Surfaces_Lower_Stringers.assembly_counter,
         'Lower_Stringers_L')
 
+Surfaces_Rib_Stiffener_Y_Upper_1 =\
+    surface_classes.RibCaps(
+        N_RIBS - 1,
+        shape_of_array[2] - 3,
+        Curve_Rib_Stiffener_Y_Upper_1.curves[:, 1:-1],
+        Curve_Rib_Stiffener_Y_Upper_1.curves[:, 1:-1],
+        Curve_Upper_Rib.curves[:-1, 1:-1],
+        Surfaces_Lower_Stringers_L.surface_counter,
+        Surfaces_Lower_Stringers_L.component_counter,
+        Surfaces_Lower_Stringers_L.assembly_counter,
+        'Rib_Caps_Upper_1')
+
+Surfaces_Rib_Stiffener_Y_Upper_2 =\
+    surface_classes.RibCaps(
+        N_RIBS - 2,
+        shape_of_array[2] - 3,
+        Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
+        Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
+        Curve_Upper_Rib.curves[1:, 1:-1],
+        Surfaces_Rib_Stiffener_Y_Upper_1.surface_counter,
+        Surfaces_Rib_Stiffener_Y_Upper_1.component_counter,
+        Surfaces_Rib_Stiffener_Y_Upper_1.assembly_counter,
+        'Rib_Caps_Upper_2')
+
+Surfaces_Rib_Stiffener_Y_Lower_1 =\
+    surface_classes.RibCaps(
+        N_RIBS - 1,
+        shape_of_array[2] - 3,
+        Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
+        Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
+        Curve_Lower_Rib.curves[:-1, 1:-1],
+        Surfaces_Rib_Stiffener_Y_Upper_2.surface_counter,
+        Surfaces_Rib_Stiffener_Y_Upper_2.component_counter,
+        Surfaces_Rib_Stiffener_Y_Upper_2.assembly_counter,
+        'Rib_Caps_Lower_1')
+
+Surfaces_Rib_Stiffener_Y_Lower_2 =\
+    surface_classes.RibCaps(
+        N_RIBS - 2,
+        shape_of_array[2] - 3,
+        Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
+        Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
+        Curve_Lower_Rib.curves[1:, 1:-1],
+        Surfaces_Rib_Stiffener_Y_Lower_1.surface_counter,
+        Surfaces_Rib_Stiffener_Y_Lower_1.component_counter,
+        Surfaces_Rib_Stiffener_Y_Lower_1.assembly_counter,
+        'Rib_Caps_Lower_2')
+
 # surface_classes.CutRibHoles(
 #     Surfaces_Main_Rib.surfaces,
 #     Curve_Rib_Holes_Upper.curves,
@@ -724,7 +808,7 @@ Surfaces_Lower_Stringers_L =\
 #     N_RIBS,
 #     N_SPARS)
 
-SURFACE_COUNTER = Surfaces_Lower_Stringers_L.surface_counter
+SURFACE_COUNTER = Surfaces_Rib_Stiffener_Y_Lower_2.surface_counter
 
 # For rib's holes
 # Create circles in each of the stringer point with a radius equal to stringers height
@@ -743,12 +827,12 @@ with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     file.write(CMD)
     file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
     # Save the file and close
-    # file.write("*writefile \"C:/Users/efilippo/Documents/"
-    #            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
-    file.write(
-            "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-    )
+    file.write("*writefile \"C:/Users/efilippo/Documents/"
+               "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
+    # file.write(
+    #         "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+    #         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
+    # )
     file.write("return; # Stop script and return to application\n*quit 1;\n")
 file.close()
 
@@ -757,7 +841,7 @@ file.close()
 # Location of .tcl script and run
 TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
                     "Wing_Geometry_Generation.tcl"
-# run_argument(TCL_SCRIPT_PATH)
+run_argument(TCL_SCRIPT_PATH)
 
 # End time counter
 toc = time.perf_counter()

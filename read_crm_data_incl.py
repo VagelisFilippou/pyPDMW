@@ -134,36 +134,53 @@ class RibsInclined:
         rib_line_rotated_y : Array that contains the y coordinates of
         rotated rib line.
         """
-        rib_line_rotated_x = numpy.zeros((self.n, 2))
-        rib_line_rotated_y = numpy.zeros((self.n, 2))
-        rib_x = numpy.zeros((self.n, 2))
-        rib_y = numpy.zeros((self.n, 2))
+        rib_line_rotated_x = numpy.zeros((3, self.n, 2))
+        rib_line_rotated_y = numpy.zeros((3, self.n, 2))
+        rib_x = numpy.zeros((3, self.n, 2))
+        rib_y = numpy.zeros((3, self.n, 2))
 
         # Rotate the rib lines to have the desired inclination
         for i in range(0, self.n):
             for j in range(0, 2):
-                # Move the center of rotation
-                rib_line_x[i, j] = rib_line_x[i, j] - self.Elastic_Axis_X[0, i]
-                rib_line_y[i, j] = rib_line_y[i, j] - self.Y_vector[i, 0]
-                # Rotate x and y
-                rib_line_rotated_x[i, j] = rib_line_x[i, j] * math.cos(inclination[0, i])\
-                    - rib_line_y[i, j] * math.sin(inclination[0, i])\
-                    + self.Elastic_Axis_X[0, i]
-                rib_line_rotated_y[i, j] = rib_line_y[i, j] * math.cos(inclination[0, i])\
-                    + rib_line_x[i, j] * math.sin(inclination[0, i])\
-                    + self.Y_vector[i, 0]
-                # Move the center of rotation
-                rib_line_x[i, j] = rib_line_x[i, j] + self.Elastic_Axis_X[0, i]
-                rib_line_y[i, j] = rib_line_y[i, j] + self.Y_vector[i, 0]
+                for k in range(0, 3):
+                    # Move the center of rotation
+                    rib_line_x[k, i, j] = rib_line_x[k, i, j] - self.Elastic_Axis_X[k, i]
+                    rib_line_y[k, i, j] = rib_line_y[k, i, j] - self.Y_vector[i, k]
+                    # Rotate x and y
+                    rib_line_rotated_x[k, i, j] = rib_line_x[k, i, j] * math.cos(inclination[k, i])\
+                        - rib_line_y[k, i, j] * math.sin(inclination[k, i])\
+                        + self.Elastic_Axis_X[k, i]
+                    rib_line_rotated_y[k, i, j] = rib_line_y[k, i, j] * math.cos(inclination[k, i])\
+                        + rib_line_x[k, i, j] * math.sin(inclination[k, i])\
+                        + self.Y_vector[i, k]
+                    # Move the center of rotation
+                    rib_line_x[k, i, j] = rib_line_x[k, i, j] + self.Elastic_Axis_X[k, i]
+                    rib_line_y[k, i, j] = rib_line_y[k, i, j] + self.Y_vector[i, k]
 
         # Find the intersection with LE and TE
         for i in range(0, self.n):
-            rib_x[i, 0], rib_y[i, 0] = intersection(le_x, le_y,
-                                                    rib_line_rotated_x[i, :],
-                                                    rib_line_rotated_y[i, :])
-            rib_x[i, 1], rib_y[i, 1] = intersection(te_x, te_y,
-                                                    rib_line_rotated_x[i, :],
-                                                    rib_line_rotated_y[i, :])
+            for k in range(0, 3):
+                x_0, y_0 =\
+                    intersection(le_x, le_y,
+                                 rib_line_rotated_x[k, i, :],
+                                 rib_line_rotated_y[k, i, :])
+                x_1, y_1 =\
+                    intersection(te_x, te_y,
+                                 rib_line_rotated_x[k, i, :],
+                                 rib_line_rotated_y[k, i, :])
+
+                if len(x_0) == 0:
+                    pass
+                else:
+                    rib_x[k, i, 0] = x_0[0]
+                    rib_y[k, i, 0] = y_0[0]
+
+                if len(x_1) == 0:
+                    pass
+                else:
+                    rib_x[k, i, 1] = x_1[0]
+                    rib_y[k, i, 1] = y_1[0]
+
         return rib_x, rib_y, rib_line_rotated_x, rib_line_rotated_y
 
     def interpolate(self):
@@ -226,8 +243,8 @@ class RibsInclined:
 
         # Initialize the arrays that will help us
         # find the intersections of each rib
-        rib_line_x = numpy.zeros((self.n, 2))
-        rib_line_y = numpy.zeros((self.n, 2))
+        rib_line_x = numpy.zeros((3, self.n, 2))
+        rib_line_y = numpy.zeros((3, self.n, 2))
         le_x = numpy.zeros((21, 1))
         le_y = numpy.zeros((21, 1))
         te_x = numpy.zeros((21, 1))
@@ -237,10 +254,10 @@ class RibsInclined:
         for i in range(0, self.n):
             for j in range(0, 2):
                 if j == 0:
-                    rib_line_x[i, j] = -10
+                    rib_line_x[:, i, j] = -10
                 else:
-                    rib_line_x[i, j] = 30
-                rib_line_y[i, j] = self.Y_vector[i, 0]
+                    rib_line_x[:, i, j] = 30
+                rib_line_y[:, i, j] = self.Y_vector[i, :]
 
         # Set the coordinates of the LE and TE
         for i in range(0, 21):
@@ -258,11 +275,10 @@ class RibsInclined:
         # Calculate the id of the first rib that intersects with the kink's rib
         idx = 0
         for i in range(0, self.n):
-            int_x, int_y = intersection(rib_x[i, :], rib_y[i, :],
-                                        rib_x[self.Rib_Sections_ID[1]
-                                              - 1, :],
-                                        rib_y[self.Rib_Sections_ID[1]
-                                              - 1, :])
+            int_x, int_y =\
+                intersection(rib_x[0, i, :], rib_y[0, i, :],
+                             rib_x[0, self.Rib_Sections_ID[1] - 1, :],
+                             rib_y[0, self.Rib_Sections_ID[1] - 1, :])
             if len(int_x) == 0 and i > self.Rib_Sections_ID[1] - 1:
                 print(int_x, int_y)
                 idx = i
@@ -270,12 +286,12 @@ class RibsInclined:
 
         # Adjust the angle of the ribs between the first rib after the
         # intersection and the kink's rib
-        self.new_angles =\
+        new_angles =\
             numpy.linspace(self.inclination[0, self.Rib_Sections_ID[1] - 1],
                            self.inclination[0, idx + 4], idx + 4 -
                            (self.Rib_Sections_ID[1] - 1))
         self.inclination[:, self.Rib_Sections_ID[1] - 1: idx + 4] =\
-            self.new_angles
+            new_angles
         self.inclination[:, - 2] = self.inclination[0, - 2] / 2
 
         # Get the coordinates of the intersections for the 1st rotation
@@ -288,66 +304,70 @@ class RibsInclined:
         # Define the arrays for the coordinates of the rotated ribs n_points
         # must be equal to the those of the database (120 for each curve)
         n_points = 120
-        x_new = numpy.zeros((self.n, n_points))
-        y_new = numpy.zeros((self.n, n_points))
+        x_new_all = numpy.zeros((3, self.n, n_points))
+        y_new_all = numpy.zeros((3, self.n, n_points))
 
-        # # Use linear interpolation to find the coordinates of the lin-spaced x
-        # for i in range(0, self.n):
-        #     x = [rib_x[i, 0], rib_x[i, 1]]
-        #     y = [rib_y[i, 0], rib_y[i, 1]]
-        #     f = interpolate.interp1d(x, y)
-        #     x_new[i, :] = numpy.linspace(rib_x[i, 0], rib_x[i, 1], n_points)
-        #     y_new[i, :] = f(x_new[i, :])
+        # Use linear interpolation to find the coordinates of the lin-spaced x
+        for i in range(0, self.n):
+            for k in range(0, 3):
+                x = [rib_x[k, i, 0], rib_x[k, i, 1]]
+                y = [rib_y[k, i, 0], rib_y[k, i, 1]]
+                f = interpolate.interp1d(x, y)
+                x_new_all[k, i, :] = numpy.linspace(rib_x[k, i, 0], rib_x[k, i, 1], n_points)
+                y_new_all[k, i, :] = f(x_new_all[k, i, :])
 
-        # # Now concatenate the values
-        # x_new = numpy.concatenate(x_new)
-        # y_new = numpy.concatenate(y_new)
+        self.X = numpy.zeros((3, self.n, 2 * n_points))
+        self.Y = numpy.zeros((3, self.n, 2 * n_points))
+        self.Z = numpy.zeros((3, self.n, 2 * n_points))
+        w_list = [0, 0.03, - 0.03]
+        for k in range(0, 3):
+            # Now concatenate the values
+            x_new = numpy.concatenate(x_new_all[k, :, :])
+            y_new = numpy.concatenate(y_new_all[k, :, :])
+            # Concatenate the known coordinates in upper and lower arrays
+            x_upper = numpy.concatenate(x_[k, 0:119, :])
+            y_upper = numpy.concatenate(y_[k, 0:119, :])
+            z_upper = numpy.concatenate(z_[k, 0:119, :])
+            x_lower = numpy.concatenate(x_[k, 120:239, :])
+            y_lower = numpy.concatenate(y_[k, 120:239, :])
+            z_lower = numpy.concatenate(z_[k, 120:239, :])
 
-        # # Concatenate the known coordinates in upper and lower arrays
-        # x_upper = numpy.concatenate(x_[0:119, :])
-        # y_upper = numpy.concatenate(y_[0:119, :])
-        # z_upper = numpy.concatenate(z_[0:119, :])
-        # x_lower = numpy.concatenate(x_[120:239, :])
-        # y_lower = numpy.concatenate(y_[120:239, :])
-        # z_lower = numpy.concatenate(z_[120:239, :])
+            # Define the request array that contains the XY pairs where we want
+            # to find the Z
+            request = numpy.transpose(numpy.array([x_new, y_new]))
 
-        # # Define the request array that contains the XY pairs where we want
-        # # to find the Z
-        # request = numpy.transpose(numpy.array([x_new, y_new]))
+            # Find the desired data for the upper points with griddata function
+            points_upper = numpy.transpose(numpy.array([x_upper, y_upper]))
+            values_upper = numpy.transpose(z_upper)
+            Z_upper = interpolate.griddata(points_upper, values_upper, request)
 
-        # # Find the desired data for the upper points with griddata function
-        # points_upper = numpy.transpose(numpy.array([x_upper, y_upper]))
-        # values_upper = numpy.transpose(z_upper)
-        # Z_upper = interpolate.griddata(points_upper, values_upper, request)
+            # Find the desired data for the lower points with griddata function
+            points_lower = numpy.transpose(numpy.array([x_lower, y_lower]))
+            values_lower = numpy.transpose(z_lower)
+            Z_lower = interpolate.griddata(points_lower, values_lower, request)
 
-        # # Find the desired data for the lower points with griddata function
-        # points_lower = numpy.transpose(numpy.array([x_lower, y_lower]))
-        # values_lower = numpy.transpose(z_lower)
-        # Z_lower = interpolate.griddata(points_lower, values_lower, request)
+            # Now reshape to an array form
+            X = x_new.reshape(len(self.Y_vector), n_points)
+            Y = y_new.reshape(len(self.Y_vector), n_points)
+            Z_upper = Z_upper.reshape(len(self.Y_vector), n_points)
+            Z_lower = Z_lower.reshape(len(self.Y_vector), n_points)
 
-        # # Now reshape to an array form
-        # X = x_new.reshape(len(self.Y_vector), n_points)
-        # Y = y_new.reshape(len(self.Y_vector), n_points)
-        # Z_upper = Z_upper.reshape(len(self.Y_vector), n_points)
-        # Z_lower = Z_lower.reshape(len(self.Y_vector), n_points)
+            # Construct the total arrays
+            self.X[k, :, :] = numpy.concatenate((numpy.flip(X, 1), X), axis=1)
+            self.Y[k, :, :] = numpy.concatenate((numpy.flip(Y, 1), Y), axis=1)
+            self.Z[k, :, :] = numpy.concatenate((numpy.flip(Z_upper, 1), Z_lower), axis=1)
 
-        # # Construct the total arrays
-        # self.X = numpy.concatenate((numpy.flip(X, 1), X), axis=1)
-        # self.Y = numpy.concatenate((numpy.flip(Y, 1), Y), axis=1)
-        # self.Z = numpy.concatenate((numpy.flip(Z_upper, 1), Z_lower), axis=1)
+            # Replace the XYZ values of the straight ribs with the non-interpolated
+            self.X[k, 0: self.Rib_Sections_ID[1], :] = numpy.transpose(
+                x_[k, :, 0: self.Rib_Sections_ID[1]])
+            self.Y[k, 0: self.Rib_Sections_ID[1], :] = numpy.transpose(
+                y_[k, :, 0: self.Rib_Sections_ID[1]])
+            self.Z[k, 0: self.Rib_Sections_ID[1], :] = numpy.transpose(
+                z_[k, :, 0: self.Rib_Sections_ID[1]])
 
-        # # Replace the XYZ values of the straight ribs with the non-interpolated
-        # self.X[0: self.Rib_Sections_ID[1], :] = numpy.transpose(
-        #     x_[:, 0: self.Rib_Sections_ID[1]])
-        # self.Y[0: self.Rib_Sections_ID[1], :] = numpy.transpose(
-        #     y_[:, 0: self.Rib_Sections_ID[1]])
-        # self.Z[0: self.Rib_Sections_ID[1], :] = numpy.transpose(
-        #     z_[:, 0: self.Rib_Sections_ID[1]])
-        # self.X[- 1, :] = numpy.transpose(wing.x[:, - 1])
-        # self.Y[- 1, :] = numpy.transpose(wing.y[:, - 1])
-        # self.Z[- 1, :] = numpy.transpose(wing.z[:, - 1])
+            self.X[k, - 1, :] = numpy.transpose(wing.x[:, - 1])
+            self.Y[k, - 1, :] = numpy.transpose(wing.y[:, - 1]) + w_list[k]
+            self.Z[k, - 1, :] = numpy.transpose(wing.z[:, - 1])
 
-        # # Sharp TE
-        # self.Z[:, 0] = self.Z[:, -1]
-        # # return self.X, self.Y, self.Z, self.chords, self.twist, self.Elastic_Axis_X, self.rib_x, self.rib_y, self.incl
-        # return self.X, self.Y, self.Z
+            # Sharp TE
+            self.Z[k, :, 0] = self.Z[k, :, -1]
