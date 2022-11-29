@@ -54,10 +54,10 @@ delete_files()
 parameters = Parameters(
     29.38,  # Semi-span
     0.37,   # Yehudi break normalized
-    3,      # Number of spars
-    5,      # Number of central ribs
-    10,      # Number of ribs from fuselage till yehudi break
-    30,     # Number of ribs from yehudi break till semi-span
+    2,      # Number of spars
+    3,      # Number of central ribs
+    5,      # Number of ribs from fuselage till yehudi break
+    8,     # Number of ribs from yehudi break till semi-span
     0.15,    # front spar position
     0.75,    # rear spar position
     0.1,    # fuselage section normalized
@@ -65,7 +65,7 @@ parameters = Parameters(
     0.3,    # Root right spar cap width
     0.1,    # Tip left spar cap width
     0.1,    # Tip right spar cap width
-    8,      # Number of stringers per spar section
+    4,      # Number of stringers per spar section
     0.03    # Stringers tolerance from spar caps
     )
 
@@ -131,6 +131,7 @@ plt.scatter(Spars_nodes_X, Spars_nodes_Y, 5, marker='o')
 plt.scatter(Spar_Caps_XL, Spar_Caps_YL, 5, marker='o')
 plt.scatter(Spar_Caps_XR, Spar_Caps_YR, 5, marker='o')
 plt.scatter(Stringers_X, Stringers_Y, 5, marker='o')
+# plt.show()
 
 # ################# Writing in Command file: ##################
 
@@ -398,23 +399,23 @@ Curve_Rib_Stiffener_Y_Lower_2 =\
         Curve_IDs_Lower[2, 1:, :],
         Curve_Rib_Stiffener_Y_Lower_1.curve_counter)
 
-# Curve_Rib_Holes_Upper =\
-#     curve_classes.CirclesForStringers(
-#         N_RIBS,
-#         N_STRINGERS,
-#         N_SPARS,
-#         N_STRINGERS_PER_SECT,
-#         Stringer_ID_Upper,
-#         Curve_Lower_Stringers_Extend.curve_counter)\
+Curve_Rib_Holes_Upper =\
+    curve_classes.CirclesForStringers(
+        N_RIBS,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Upper[0, :, :],
+        Curve_Rib_Stiffener_Y_Lower_2.curve_counter)\
 
-# Curve_Rib_Holes_Lower =\
-#     curve_classes.CirclesForStringers(
-#         N_RIBS,
-#         N_STRINGERS,
-#         N_SPARS,
-#         N_STRINGERS_PER_SECT,
-#         Stringer_ID_Lower,
-#         Curve_Rib_Holes_Upper.curve_counter)
+Curve_Rib_Holes_Lower =\
+    curve_classes.CirclesForStringers(
+        N_RIBS,
+        N_STRINGERS,
+        N_SPARS,
+        N_STRINGERS_PER_SECT,
+        Stringer_ID_Lower[0, :, :],
+        Curve_Rib_Holes_Upper.curve_counter)
 
 
 Surfaces_Left_Spar_Cap_Rib =\
@@ -846,6 +847,8 @@ SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
+    # file.write("*templatefileset \"C:/Program Files/Altair/2021.2/hwdesktop/templates/feoutput/nastran/general\"\n")
+    # file.write("*setmacrofile \"C:/Program Files/Altair/2021.2/hwdesktop/hm/scripts/UserProfiles/../nastran/nastran.mac\"\n")
     file.write("*nodecleartempmark\n")
 
     # Clean-up the geometry

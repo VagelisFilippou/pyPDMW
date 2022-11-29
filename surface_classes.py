@@ -367,7 +367,11 @@ class CutRibHoles:
                     file.write(cmd)
                     file.write('\n*createmark lines 2 ' + my_str +
                                '\n*createvector 1 0 1 0\n'
-                               '*surfacemarksplitwithlines 1 2 1 9 0\n')
+                               '*surfacemarksplitwithlines 1 2 1 9 0\n'
+                               'set surfslist [hm_latestentityid surfaces]\n'
+                               '*deleteelementsmode 0\n'
+                               '*createmark surfaces 1 surfsList\n'
+                               '*deletemark surfaces 1\n')
         file.close()
 
 class RibCaps(MultipleSurfacesThreeCurves):
