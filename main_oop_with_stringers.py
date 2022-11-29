@@ -54,19 +54,20 @@ delete_files()
 parameters = Parameters(
     29.38,  # Semi-span
     0.37,   # Yehudi break normalized
-    3,      # Number of spars
+    4,      # Number of spars
     5,      # Number of central ribs
-    10,      # Number of ribs from fuselage till yehudi break
-    30,     # Number of ribs from yehudi break till semi-span
-    0.15,    # front spar position
-    0.75,    # rear spar position
+    5,     # Number of ribs from fuselage till yehudi break
+    8,     # Number of ribs from yehudi break till semi-span
+    0.15,   # front spar position
+    0.75,   # rear spar position``
     0.1,    # fuselage section normalized
     0.3,    # Root left spar cap width
     0.3,    # Root right spar cap width
     0.1,    # Tip left spar cap width
     0.1,    # Tip right spar cap width
-    8,      # Number of stringers per spar section
-    0.03    # Stringers tolerance from spar caps
+    5,      # Number of stringers per spar section
+    0.05,   # Stringers tolerance from spar caps
+    0.05    # Width of rib stiffeners
     )
 
 # ################# Derive the Geometry and its' parameters: ##################
@@ -748,7 +749,7 @@ Surfaces_Lower_Stringers_L =\
         Surfaces_Lower_Stringers.assembly_counter,
         'Lower_Stringers_L')
 
-Surfaces_Rib_Stiffener_Y_Upper_1 =\
+Surfaces_Rib_Caps_Upper_1 =\
     surface_classes.RibCaps(
         N_RIBS - 1,
         shape_of_array[2] - 3,
@@ -760,41 +761,69 @@ Surfaces_Rib_Stiffener_Y_Upper_1 =\
         Surfaces_Lower_Stringers_L.assembly_counter,
         'Rib_Caps_Upper_1')
 
-Surfaces_Rib_Stiffener_Y_Upper_2 =\
+Surfaces_Rib_Caps_Upper_2 =\
     surface_classes.RibCaps(
-        N_RIBS - 2,
+        N_RIBS - 1,
         shape_of_array[2] - 3,
         Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
         Curve_Upper_Rib.curves[1:, 1:-1],
-        Surfaces_Rib_Stiffener_Y_Upper_1.surface_counter,
-        Surfaces_Rib_Stiffener_Y_Upper_1.component_counter,
-        Surfaces_Rib_Stiffener_Y_Upper_1.assembly_counter,
+        Surfaces_Rib_Caps_Upper_1.surface_counter,
+        Surfaces_Rib_Caps_Upper_1.component_counter,
+        Surfaces_Rib_Caps_Upper_1.assembly_counter,
         'Rib_Caps_Upper_2')
 
-Surfaces_Rib_Stiffener_Y_Lower_1 =\
+Surfaces_Rib_Caps_Lower_1 =\
     surface_classes.RibCaps(
         N_RIBS - 1,
         shape_of_array[2] - 3,
         Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
         Curve_Lower_Rib.curves[:-1, 1:-1],
-        Surfaces_Rib_Stiffener_Y_Upper_2.surface_counter,
-        Surfaces_Rib_Stiffener_Y_Upper_2.component_counter,
-        Surfaces_Rib_Stiffener_Y_Upper_2.assembly_counter,
+        Surfaces_Rib_Caps_Upper_2.surface_counter,
+        Surfaces_Rib_Caps_Upper_2.component_counter,
+        Surfaces_Rib_Caps_Upper_2.assembly_counter,
         'Rib_Caps_Lower_1')
 
-Surfaces_Rib_Stiffener_Y_Lower_2 =\
+Surfaces_Rib_Caps_Lower_2 =\
     surface_classes.RibCaps(
-        N_RIBS - 2,
+        N_RIBS - 1,
         shape_of_array[2] - 3,
         Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
         Curve_Lower_Rib.curves[1:, 1:-1],
-        Surfaces_Rib_Stiffener_Y_Lower_1.surface_counter,
-        Surfaces_Rib_Stiffener_Y_Lower_1.component_counter,
-        Surfaces_Rib_Stiffener_Y_Lower_1.assembly_counter,
+        Surfaces_Rib_Caps_Lower_1.surface_counter,
+        Surfaces_Rib_Caps_Lower_1.component_counter,
+        Surfaces_Rib_Caps_Lower_1.assembly_counter,
         'Rib_Caps_Lower_2')
+
+
+Surfaces_Rib_Stiffeners_1 =\
+    triple_surface_classes.RibStiffners(
+        N_RIBS - 1,
+        N_STRINGERS,
+        Stringer_ID_Upper[0, :, :],
+        Stringer_ID_Upper[1, :, :],
+        Stringer_ID_Lower[1, :, :],
+        Stringer_ID_Lower[0, :, :],
+        Surfaces_Rib_Caps_Lower_2.surface_counter,
+        Surfaces_Rib_Caps_Lower_2.component_counter,
+        Surfaces_Rib_Caps_Lower_2.assembly_counter,
+        'Rib_Stiffeners_1')
+
+Surfaces_Rib_Stiffeners_2 =\
+    triple_surface_classes.RibStiffners(
+        N_RIBS - 1,
+        N_STRINGERS,
+        Stringer_ID_Upper[0, 1:, :],
+        Stringer_ID_Upper[2, 1:, :],
+        Stringer_ID_Lower[2, 1:, :],
+        Stringer_ID_Lower[0, 1:, :],
+        Surfaces_Rib_Stiffeners_1.surface_counter,
+        Surfaces_Rib_Stiffeners_1.component_counter,
+        Surfaces_Rib_Stiffeners_1.assembly_counter,
+        'Rib_Stiffeners_2')
+
 
 # surface_classes.CutRibHoles(
 #     Surfaces_Main_Rib.surfaces,
@@ -808,7 +837,7 @@ Surfaces_Rib_Stiffener_Y_Lower_2 =\
 #     N_RIBS,
 #     N_SPARS)
 
-SURFACE_COUNTER = Surfaces_Rib_Stiffener_Y_Lower_2.surface_counter
+SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
 
 # For rib's holes
 # Create circles in each of the stringer point with a radius equal to stringers height
@@ -827,12 +856,12 @@ with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     file.write(CMD)
     file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
     # Save the file and close
-    file.write("*writefile \"C:/Users/efilippo/Documents/"
-               "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
-    # file.write(
-    #         "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-    #         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-    # )
+    # file.write("*writefile \"C:/Users/efilippo/Documents/"
+    #            "ASD_Lab_Parametric_Design_of_Wing_OOP_Init/HM_Files/wing.hm\" 1\n")
+    file.write(
+            "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
+    )
     file.write("return; # Stop script and return to application\n*quit 1;\n")
 file.close()
 
@@ -846,4 +875,4 @@ run_argument(TCL_SCRIPT_PATH)
 # End time counter
 toc = time.perf_counter()
 # Print time
-print(f"Script run in {toc - tic:0.3f} seconds")
+print(f"Script run in {toc - tic:0.1f} seconds")

@@ -28,6 +28,7 @@ class Parameters:
     # Stringers number per spar section
     n_stringers: int
     stringers_tolerance: float
+    rib_stiffeners_width: float
 
     # List with the location of each spar
     def spars_position(self):

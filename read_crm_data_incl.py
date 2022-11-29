@@ -109,7 +109,7 @@ class RibsInclined:
         self.rib_line_y = numpy.zeros((3, self.n, 2))
         self.inclination = numpy.zeros((3, self.n))
         # Fill the rest variables
-        self.interpolate()
+        self.interpolate(parameters)
 
     def rib_intersection(self, rib_line_x, rib_line_y, inclination, le_x, le_y,
                          te_x, te_y):
@@ -183,7 +183,7 @@ class RibsInclined:
 
         return rib_x, rib_y, rib_line_rotated_x, rib_line_rotated_y
 
-    def interpolate(self):
+    def interpolate(self, parameters):
         """
         It's the method that actually does the interpolation given the Y vector.
 
@@ -319,7 +319,7 @@ class RibsInclined:
         self.X = numpy.zeros((3, self.n, 2 * n_points))
         self.Y = numpy.zeros((3, self.n, 2 * n_points))
         self.Z = numpy.zeros((3, self.n, 2 * n_points))
-        w_list = [0, 0.03, - 0.03]
+        w_list = [0, parameters.rib_stiffeners_width, - parameters.rib_stiffeners_width]
         for k in range(0, 3):
             # Now concatenate the values
             x_new = numpy.concatenate(x_new_all[k, :, :])
