@@ -116,7 +116,7 @@ class SparsAndCapsCoords:
                             stringers_nodes_x[k, i, :], stringers_nodes_y[k, i, :],
                             wing.rib_line_x[k, j, :],
                             wing.rib_line_y[k, j, :])
-                    if len(x_int) == 0:
+                    if len(x_int_str) == 0:
                         pass
                     else:
                         stringers_nodes_x_incl[k, i, j] = x_int_str[0]

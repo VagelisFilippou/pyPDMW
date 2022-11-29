@@ -748,7 +748,7 @@ Surfaces_Lower_Stringers_L =\
         Surfaces_Lower_Stringers.assembly_counter,
         'Lower_Stringers_L')
 
-Surfaces_Rib_Stiffener_Y_Upper_1 =\
+Surfaces_Rib_Caps_Upper_1 =\
     surface_classes.RibCaps(
         N_RIBS - 1,
         shape_of_array[2] - 3,
@@ -760,41 +760,69 @@ Surfaces_Rib_Stiffener_Y_Upper_1 =\
         Surfaces_Lower_Stringers_L.assembly_counter,
         'Rib_Caps_Upper_1')
 
-Surfaces_Rib_Stiffener_Y_Upper_2 =\
+Surfaces_Rib_Caps_Upper_2 =\
     surface_classes.RibCaps(
-        N_RIBS - 2,
+        N_RIBS - 1,
         shape_of_array[2] - 3,
         Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
         Curve_Upper_Rib.curves[1:, 1:-1],
-        Surfaces_Rib_Stiffener_Y_Upper_1.surface_counter,
-        Surfaces_Rib_Stiffener_Y_Upper_1.component_counter,
-        Surfaces_Rib_Stiffener_Y_Upper_1.assembly_counter,
+        Surfaces_Rib_Caps_Upper_1.surface_counter,
+        Surfaces_Rib_Caps_Upper_1.component_counter,
+        Surfaces_Rib_Caps_Upper_1.assembly_counter,
         'Rib_Caps_Upper_2')
 
-Surfaces_Rib_Stiffener_Y_Lower_1 =\
+Surfaces_Rib_Caps_Lower_1 =\
     surface_classes.RibCaps(
         N_RIBS - 1,
         shape_of_array[2] - 3,
         Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
         Curve_Lower_Rib.curves[:-1, 1:-1],
-        Surfaces_Rib_Stiffener_Y_Upper_2.surface_counter,
-        Surfaces_Rib_Stiffener_Y_Upper_2.component_counter,
-        Surfaces_Rib_Stiffener_Y_Upper_2.assembly_counter,
+        Surfaces_Rib_Caps_Upper_2.surface_counter,
+        Surfaces_Rib_Caps_Upper_2.component_counter,
+        Surfaces_Rib_Caps_Upper_2.assembly_counter,
         'Rib_Caps_Lower_1')
 
-Surfaces_Rib_Stiffener_Y_Lower_2 =\
+Surfaces_Rib_Caps_Lower_2 =\
     surface_classes.RibCaps(
-        N_RIBS - 2,
+        N_RIBS - 1,
         shape_of_array[2] - 3,
         Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
         Curve_Lower_Rib.curves[1:, 1:-1],
-        Surfaces_Rib_Stiffener_Y_Lower_1.surface_counter,
-        Surfaces_Rib_Stiffener_Y_Lower_1.component_counter,
-        Surfaces_Rib_Stiffener_Y_Lower_1.assembly_counter,
+        Surfaces_Rib_Caps_Lower_1.surface_counter,
+        Surfaces_Rib_Caps_Lower_1.component_counter,
+        Surfaces_Rib_Caps_Lower_1.assembly_counter,
         'Rib_Caps_Lower_2')
+
+
+Surfaces_Rib_Stiffeners_1 =\
+    triple_surface_classes.RibStiffners(
+        N_RIBS - 1,
+        N_STRINGERS,
+        Stringer_ID_Upper[0, :, :],
+        Stringer_ID_Upper[1, :, :],
+        Stringer_ID_Lower[1, :, :],
+        Stringer_ID_Lower[0, :, :],
+        Surfaces_Rib_Caps_Lower_2.surface_counter,
+        Surfaces_Rib_Caps_Lower_2.component_counter,
+        Surfaces_Rib_Caps_Lower_2.assembly_counter,
+        'Rib_Stiffeners_1')
+
+Surfaces_Rib_Stiffeners_2 =\
+    triple_surface_classes.RibStiffners(
+        N_RIBS - 1,
+        N_STRINGERS,
+        Stringer_ID_Upper[0, 1:, :],
+        Stringer_ID_Upper[2, 1:, :],
+        Stringer_ID_Lower[2, 1:, :],
+        Stringer_ID_Lower[0, 1:, :],
+        Surfaces_Rib_Stiffeners_1.surface_counter,
+        Surfaces_Rib_Stiffeners_1.component_counter,
+        Surfaces_Rib_Stiffeners_1.assembly_counter,
+        'Rib_Stiffeners_2')
+
 
 # surface_classes.CutRibHoles(
 #     Surfaces_Main_Rib.surfaces,
@@ -808,7 +836,7 @@ Surfaces_Rib_Stiffener_Y_Lower_2 =\
 #     N_RIBS,
 #     N_SPARS)
 
-SURFACE_COUNTER = Surfaces_Rib_Stiffener_Y_Lower_2.surface_counter
+SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
 
 # For rib's holes
 # Create circles in each of the stringer point with a radius equal to stringers height
