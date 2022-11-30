@@ -19,18 +19,26 @@ class UpperRibCurve:
         my_list = list(range(self.ids[i, j + 1], self.ids[i, j] + 1))
         return my_list
 
+    def check_for_zeros(self, i, j):
+        check = 0
+        if self.ids[i, j + 1] == 0 or self.ids[i, j] + 1 == 0:
+            check = 1
+        return check
+
     def write_tcl(self, n_stringers):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
             for i in range(0, self.n_1):
-                for j in range(0, 3 * self.n_2 + 1 + n_stringers):
-                    my_list = self.list_creation(i, j)
-                    my_str = ' '.join(map(str, my_list))
-                    cmd = "*createlist nodes 1 " + my_str
-                    file.write(cmd)
-                    file.write("\n*createvector 1 1 0 0\n*createvector 2 1 0 0"
-                               "\n*linecreatespline nodes 1 0 0 1 2\n")
-                    self.curve_counter += 1
-                    self.curves[i, j] = self.curve_counter
+                for j in range(0,  3 * self.n_2 + 1 + n_stringers):
+                    if self.check_for_zeros(i, j) != 1:
+                        my_list = self.list_creation(i, j)
+                        if len(my_list) > 1:
+                            my_str = ' '.join(map(str, my_list))
+                            cmd = "*createlist nodes 1 " + my_str
+                            file.write(cmd)
+                            file.write("\n*createvector 1 1 0 0\n*createvector 2 1 0 0"
+                                       "\n*linecreatespline nodes 1 0 0 1 2\n")
+                            self.curve_counter += 1
+                            self.curves[i, j] = self.curve_counter
         file.close()
         return self.curves, self.curve_counter
 
@@ -55,7 +63,8 @@ class RibCurveIDs:
         for k in range(0, n_1):
             for i in range(0, n_2 - 1):
                 for j in range(0, n_stringers_per_sect + 1):
-                    main_skin_sect[:, j] = curves[:, (3 + n_stringers_per_sect) * i + 3 + j]
+                    main_skin_sect[:, j] =\
+                        curves[:, (3 + n_stringers_per_sect) * i + 3 + j]
                     self.main_skin[:, i, :] = main_skin_sect
 
 
@@ -63,6 +72,12 @@ class LowerRibCurve(UpperRibCurve):
     def list_creation(self, i, j):
         my_list = list(range(self.ids[i, j], self.ids[i, j + 1] + 1))
         return my_list
+
+    def check_for_zeros(self, i, j):
+        check = 0
+        if self.ids[i, j] == 0 or self.ids[i, j + 1] + 1 == 0:
+            check = 1
+        return check
 
 
 class LeadingTrailingEdgeCurves:
@@ -111,18 +126,25 @@ class MultipleCurves:
         my_list = list((self.ids_1[i, j], self.ids_2[i, j]))
         return my_list
 
+    def check_for_zeros(self, i, j):
+        check = 0
+        if self.ids_1[i, j] == 0 or self.ids_2[i, j] == 0:
+            check = 1
+        return check
+
     def write_tcl(self):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
             for i in range(0, self.n_1):
                 for j in range(0, self.n_2):
-                    my_list = self.list_creation(i, j)
-                    my_str = ' '.join(map(str, my_list))
-                    cmd = "*createlist nodes 1 " + my_str
-                    file.write(cmd)
-                    file.write("\n*createvector 1 1 0 0\n*createvector 2 1 0 0"
-                               "\n*linecreatespline nodes 1 0 0 1 2\n")
-                    self.curve_counter += 1
-                    self.curves_indexing(i, j)
+                    if self.check_for_zeros(i, j) != 1:
+                        my_list = self.list_creation(i, j)
+                        my_str = ' '.join(map(str, my_list))
+                        cmd = "*createlist nodes 1 " + my_str
+                        file.write(cmd)
+                        file.write("\n*createvector 1 1 0 0\n*createvector 2 1 0 0"
+                                   "\n*linecreatespline nodes 1 0 0 1 2\n")
+                        self.curve_counter += 1
+                        self.curves_indexing(i, j)
         file.close()
         return self.curves, self.curve_counter
 
@@ -161,6 +183,12 @@ class StringersCurves(StringersInRibsCurves):
     def list_creation(self, i, j):
         my_list = list((self.ids_1[i, j], self.ids_2[i + 1, j]))
         return my_list
+
+    def check_for_zeros(self, i, j):
+        check = 0
+        if self.ids_1[i, j] == 0 or self.ids_2[i + 1, j] == 0:
+            check = 1
+        return check
 
 class CirclesForStringers:
     def __init__(self, n_1, n_2, n_spars, n_stringers_per_sect,

@@ -20,6 +20,12 @@ class ConnectionNodes:
         # Insert the TE and LE ids to curve arrays
         self.insert_le_te(n_spars, n_stringers, parameters.N_ribs)
 
+        for i in range(0, 3):
+            for j in range(0, parameters.N_ribs):
+                self.Curve_IDs_Upper[i, j, :] =\
+                    self.pushZerosToEnd(self.Curve_IDs_Upper[i, j, :])
+                self.Curve_IDs_Lower[i, j, :] =\
+                    self.pushZerosToEnd(self.Curve_IDs_Lower[i, j, :])
     def put_in_arrays(self, parameters, x_y_z, n_spars, n_stringers):
         # Insert them to the arrays
         self.Curve_IDs_Upper =\
@@ -36,14 +42,14 @@ class ConnectionNodes:
                         x_y_z.Spar_ID_Upper[k, i, :],
                         x_y_z.Spar_Cap_ID_Upper_Left[k, i, :],
                         x_y_z.Spar_Cap_ID_Upper_Right[k, i, :],
-                        x_y_z.stringer_id_upper[k, i, :]
+                        x_y_z.stringer_par_id_upper[k, i, :]
                         )))
                 self.Curve_IDs_Lower[k, i, :] =\
                     np.sort(np.concatenate((
                         x_y_z.Spar_ID_Lower[k, i, :],
                         x_y_z.Spar_Cap_ID_Lower_Left[k, i, :],
                         x_y_z.Spar_Cap_ID_Lower_Right[k, i, :],
-                        x_y_z.stringer_id_lower[k, i, :]
+                        x_y_z.stringer_par_id_lower[k, i, :]
                         )))
         self.Curve_IDs_Upper = self.Curve_IDs_Upper.astype(int)
         self.Curve_IDs_Lower = self.Curve_IDs_Lower.astype(int)
@@ -79,3 +85,27 @@ class ConnectionNodes:
         # Make them integers
         self.Curve_IDs_Upper = Curve_IDs_Upper_all.astype(int)
         self.Curve_IDs_Lower = Curve_IDs_Lower_all.astype(int)
+
+    def pushZerosToEnd(self, arr):
+        n = len(arr)
+        count = 0 # Count of non-zero elements
+    
+        # Traverse the array. If element
+        # encountered is non-zero, then
+        # replace the element at index
+        # 'count' with this element
+        for i in range(n):
+            if arr[i] != 0:
+    
+                # here count is incremented
+                arr[count] = arr[i]
+                count+=1
+    
+        # Now all non-zero elements have been
+        # shifted to front and 'count' is set
+        # as index of first 0. Make all
+        # elements 0 from count to end.
+        while count < n:
+            arr[count] = 0
+            count += 1
+        return arr
