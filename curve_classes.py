@@ -47,25 +47,42 @@ class RibCurveIDs:
 
     def __init__(self, curves, n_1, n_2, n_stringers_per_sect):
         # Store the id of each curve type
+        n_0 = len(curves[:, 0])
         self.LE = curves[:, 0]
-        self.TE = curves[:, -1]
+        self.TE = self.return_ith_from_zero(curves, 1)
         self.SC_L = np.zeros((n_1, n_2))
         self.SC_R = np.zeros((n_1, n_2))
         self.main_skin = np.zeros((n_1, n_2 - 1, n_stringers_per_sect + 1))
         main_skin_sect = np.zeros((n_1, n_stringers_per_sect + 1))
         for i in range(0, n_2):
             if i < n_2 - 1:
-                self.SC_L[:, i] = curves[:, (3 + n_stringers_per_sect) * i + 1]
-                self.SC_R[:, i] = curves[:, (3 + n_stringers_per_sect) * i + 2]
+                self.SC_L[:, i] = curves[:, 1]
+                self.SC_R[:, i] = curves[:, 2]
             elif i == n_2 - 1:
-                self.SC_L[:, i] = curves[:, (3 + n_stringers_per_sect) * i + 1]
-                self.SC_R[:, i] = curves[:, (3 + n_stringers_per_sect) * i + 2]
+                self.SC_L[:, i] = self.return_ith_from_zero(curves, 2)
+                self.SC_R[:, i] = self.return_ith_from_zero(curves, 3)
         for k in range(0, n_1):
             for i in range(0, n_2 - 1):
                 for j in range(0, n_stringers_per_sect + 1):
                     main_skin_sect[:, j] =\
                         curves[:, (3 + n_stringers_per_sect) * i + 3 + j]
                     self.main_skin[:, i, :] = main_skin_sect
+
+    def return_ith_from_zero(self, arr, id_from_zero):
+        n_1 = len(arr[:, 0])
+        n_2 = len(arr[0, :])
+        id_s = []
+        id_s_to_return = np.zeros((n_1))
+        for i in range(0, n_1):
+            if 0 in arr[i, :]:
+                for j in range(0, n_2):
+                    if arr[i, j] == 0:
+                        id_s.append(j - id_from_zero)
+                        break
+            else:
+                id_s.append(- id_from_zero)
+            id_s_to_return[i] = arr[i, id_s[i]]
+        return id_s_to_return
 
 
 class LowerRibCurve(UpperRibCurve):

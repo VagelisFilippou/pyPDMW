@@ -253,8 +253,8 @@ class LeftSideOfMainRibSurfaces(MultipleSurfaces):
 
 class RightSideOfMainRibSurfaces(MultipleSurfaces):
     def list_creation(self, i, j):
-        my_list = list((self.ids_1[i, j, -1],
-                        self.ids_2[i, j, -1],
+        my_list = list((self.ids_1[i, return_ith_from_zero(self.ids_1[i, :], 4)],
+                        self.ids_2[i, return_ith_from_zero(self.ids_2[i, :], 4)],
                         self.ids_3[i, j + 1],
                         self.ids_4[i, j, -1]))
         return my_list
@@ -271,8 +271,8 @@ class LeftSideOfSkins(MultipleSurfaces):
 
 class RightSideOfSkins(MultipleSurfaces):
     def list_creation(self, i, j):
-        my_list = list((self.ids_1[i, j, -1],
-                        self.ids_2[i + 1, j, -1],
+        my_list = list((self.ids_1[i, return_ith_from_zero(self.ids_1[i, :], 4)],
+                        self.ids_2[i + 1, return_ith_from_zero(self.ids_2[i + 1, :], 4)],
                         self.ids_3[i, j + 1],
                         self.ids_4[i, j, -1]))
         return my_list
@@ -380,3 +380,15 @@ class RibCaps(MultipleSurfacesThreeCurves):
                         self.ids_2[i, j + 1],
                         self.ids_3[i, j]))
         return my_list
+
+
+def return_ith_from_zero(vec, id_from_zero):
+    n_1 = len(vec)
+    id_1 = 0
+    for i in range(0, n_1):
+        if vec[i] == 0:
+            id_1 = i - id_from_zero
+            break
+        else:
+            id_1 = - id_from_zero
+    return id_1

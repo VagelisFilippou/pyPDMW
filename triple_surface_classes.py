@@ -107,18 +107,25 @@ class StringerSurfaces(MultipleSurfaces):
                         ))
         return my_list
 
+    def check_for_zeros(self, i, j, k):
+        check = 0
+        if self.ids_1[i, j, k] == 0 or self.ids_2[i, j, k] == 0:
+            check = 1
+        return check
+
     def write_tcl(self):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
             for i in range(0, self.n_1):
                 for j in range(0, self.n_2):
                     for k in range(0, self.n_3):
-                        my_list = self.list_creation(i, j, k)
-                        my_str = ' '.join(map(str, my_list))
-                        cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
-                        file.write(cmd)
-                        file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
-                        self.surface_counter += 1
-                        self.surfaces[i, j, k] = self.surface_counter
+                        if self.check_for_zeros(i, j, k) != 1:
+                            my_list = self.list_creation(i, j, k)
+                            my_str = ' '.join(map(str, my_list))
+                            cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
+                            file.write(cmd)
+                            file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
+                            self.surface_counter += 1
+                            self.surfaces[i, j, k] = self.surface_counter
                 self.component_counter += 1
                 self.components[i, 0] = self.component_counter
                 file.write('*createentity comps name="'
@@ -128,7 +135,8 @@ class StringerSurfaces(MultipleSurfaces):
                     '*startnotehistorystate {Moved surfaces into component "'
                     + self.components_name + '_%.0f"}\n' % (i + 1))
                 file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0, 0], self.surfaces[i, -1, -1]))
+                           % (self.surfaces[i, 0, return_ith_from_zero(self.surfaces[i, 0, :])],
+                              self.surfaces[i, -1, -1]))
                 file.write('*movemark surfaces 1 "'
                            + self.components_name + '_%.0f"\n'
                            % (i + 1))
@@ -177,17 +185,24 @@ class RibStiffners:
                         self.ids_4[i, j]))
         return my_list
 
+    def check_for_zeros(self, i, j):
+        check = 0
+        if self.ids_1[i, j] == 0 or self.ids_2[i, j] == 0:
+            check = 1
+        return check
+
     def write_tcl(self):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
             for i in range(0, self.n_1):
                 for j in range(0, self.n_2):
-                    my_list = self.list_creation(i, j)
-                    my_str = ' '.join(map(str, my_list))
-                    cmd = "*surfacemode 4\n*createlist nodes 1 " + my_str
-                    file.write(cmd)
-                    file.write("\n*surfacesplineonnodesloop2 1 0\n")
-                    self.surface_counter += 1
-                    self.surfaces[i, j] = self.surface_counter
+                    if self.check_for_zeros(i, j) != 1:
+                        my_list = self.list_creation(i, j)
+                        my_str = ' '.join(map(str, my_list))
+                        cmd = "*surfacemode 4\n*createlist nodes 1 " + my_str
+                        file.write(cmd)
+                        file.write("\n*surfacesplineonnodesloop2 1 0\n")
+                        self.surface_counter += 1
+                        self.surfaces[i, j] = self.surface_counter
                 self.component_counter += 1
                 self.components[i, 0] = self.component_counter
                 file.write('*createentity comps name="'
@@ -217,3 +232,15 @@ class RibStiffners:
                 '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
         self.assembly_counter += 1
+
+
+def return_ith_from_zero(vec):
+    n_1 = len(vec)
+    id_1 = 0
+    for i in range(0, n_1):
+        if vec[i] != 0:
+            id_1 = i
+            break
+        else:
+            pass
+    return id_1
