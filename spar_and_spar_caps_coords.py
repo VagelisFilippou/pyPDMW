@@ -127,17 +127,18 @@ class SparsAndCapsCoords:
                             stringers_nodes_y[k, i, :],
                             wing.rib_line_x[k, j, :],
                             wing.rib_line_y[k, j, :])
+                    if len(x_int_str) == 0:
+                        pass
+                    else:
+                        stringers_nodes_x_incl[k, i, j] = x_int_str[0]
+                        stringers_nodes_y_incl[k, i, j] = y_int_str[0]
+
                     x_int_str_par, y_int_str_par =\
                         intersection(
                             stringers_nodes_x_par[k, i, :],
                             stringers_nodes_y_par[k, i, :],
                             wing.rib_line_x[k, j, :],
                             wing.rib_line_y[k, j, :])
-                    if len(x_int_str) == 0:
-                        pass
-                    else:
-                        stringers_nodes_x_incl[k, i, j] = x_int_str[0]
-                        stringers_nodes_y_incl[k, i, j] = y_int_str[0]
                     if len(x_int_str_par) == 0:
                         pass
                     else:
@@ -195,9 +196,9 @@ def stringers_translation(n_nodes, derived_geometry, wing, fuselage_rib,
                 # keep fuselage_rib coordinates
                 if j == 0:
                     nodes_x[k, i, j] = position[i] * \
-                        wing.chords[k, fuselage_rib] +\
-                        derived_geometry.Origin[k, fuselage_rib, j]
-                    distance[k, i] = spars_nodes_x[0, -1, 0] - nodes_x[k, i, j]
+                        wing.chords[0, fuselage_rib] +\
+                        derived_geometry.Origin[0, fuselage_rib, j]
+                    distance[k, i] = spars_nodes_x[0, -1, 0] - nodes_x[0, i, j]
                 else:
                     nodes_x[k, i, j] = spars_nodes_x[k, -1, j] - distance[k, i]
     nodes_x[2, :, 0: fuselage_rib + 1] = nodes_x[0, :, 0: fuselage_rib + 1]

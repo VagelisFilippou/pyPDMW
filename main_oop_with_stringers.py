@@ -130,7 +130,7 @@ plt.figure()
 plt.scatter(Spars_nodes_X[0, :, :], Spars_nodes_Y[0, :, :], 5, marker='o')
 # plt.scatter(Spar_Caps_XL, Spar_Caps_YL, 5, marker='o')
 # plt.scatter(Spar_Caps_XR, Spar_Caps_YR, 5, marker='o')
-# plt.scatter(Stringers_X, Stringers_Y, 5, marker='o')
+plt.scatter(Stringers_X, Stringers_Y, 5, marker='o')
 plt.scatter(Spars_And_Spar_Caps.stringers_nodes_x_par[0, :, :],
             Spars_And_Spar_Caps.stringers_nodes_y_par[0, :, :],
             5, marker='o')
@@ -206,7 +206,6 @@ with open('Wing_Geometry_Generation.tcl', 'w') as file:
                 NODE_COUNTER += 1
                 Stringer_ID_Lower_Extend_L[i, j] = NODE_COUNTER
 file.close()
-
 
 Curve_Upper_Rib = curve_classes.UpperRibCurve(N_RIBS,
                                               N_SPARS,
@@ -372,37 +371,37 @@ Curve_Lower_Stringers_Extend_L =\
 
 shape_of_array = np.shape(Curve_IDs_Upper)
 
-# Curve_Rib_Stiffener_Y_Upper_1 =\
-#     curve_classes.MultipleCurves(
-#         N_RIBS - 1,
-#         shape_of_array[2],
-#         Curve_IDs_Upper[0, :-1, :],
-#         Curve_IDs_Upper[1, :-1, :],
-#         Curve_Lower_Stringers_Extend_L.curve_counter)
+Curve_Rib_Stiffener_Y_Upper_1 =\
+    curve_classes.MultipleCurves(
+        N_RIBS - 1,
+        shape_of_array[2],
+        Curve_IDs_Upper[0, :-1, :],
+        Curve_IDs_Upper[1, :-1, :],
+        Curve_Lower_Stringers_Extend_L.curve_counter)
 
-# Curve_Rib_Stiffener_Y_Upper_2 =\
-#     curve_classes.MultipleCurves(
-#         N_RIBS - 1,
-#         shape_of_array[2],
-#         Curve_IDs_Upper[0, 1:, :],
-#         Curve_IDs_Upper[2, 1:, :],
-#         Curve_Rib_Stiffener_Y_Upper_1.curve_counter)
+Curve_Rib_Stiffener_Y_Upper_2 =\
+    curve_classes.MultipleCurves(
+        N_RIBS - 1,
+        shape_of_array[2],
+        Curve_IDs_Upper[0, 1:, :],
+        Curve_IDs_Upper[2, 1:, :],
+        Curve_Rib_Stiffener_Y_Upper_1.curve_counter)
 
-# Curve_Rib_Stiffener_Y_Lower_1 =\
-#     curve_classes.MultipleCurves(
-#         N_RIBS - 1,
-#         shape_of_array[2],
-#         Curve_IDs_Lower[0, :-1, :],
-#         Curve_IDs_Lower[1, :-1, :],
-#         Curve_Rib_Stiffener_Y_Upper_2.curve_counter)
+Curve_Rib_Stiffener_Y_Lower_1 =\
+    curve_classes.MultipleCurves(
+        N_RIBS - 1,
+        shape_of_array[2],
+        Curve_IDs_Lower[0, :-1, :],
+        Curve_IDs_Lower[1, :-1, :],
+        Curve_Rib_Stiffener_Y_Upper_2.curve_counter)
 
-# Curve_Rib_Stiffener_Y_Lower_2 =\
-#     curve_classes.MultipleCurves(
-#         N_RIBS - 1,
-#         shape_of_array[2],
-#         Curve_IDs_Lower[0, 1:, :],
-#         Curve_IDs_Lower[2, 1:, :],
-#         Curve_Rib_Stiffener_Y_Lower_1.curve_counter)
+Curve_Rib_Stiffener_Y_Lower_2 =\
+    curve_classes.MultipleCurves(
+        N_RIBS - 1,
+        shape_of_array[2],
+        Curve_IDs_Lower[0, 1:, :],
+        Curve_IDs_Lower[2, 1:, :],
+        Curve_Rib_Stiffener_Y_Lower_1.curve_counter)
 
 # Curve_Rib_Holes_Upper =\
 #     curve_classes.CirclesForStringers(
