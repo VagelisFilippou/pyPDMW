@@ -11,7 +11,7 @@ import numpy as np
 class MultipleSurfaces:
     def __init__(self, n_1, n_2, n_3, ids_1, ids_2, ids_3, ids_4,
                  surface_counter, component_counter, assembly_counter,
-                 components_name):
+                 components_name, curve):
 
         self.n_1 = n_1
         self.n_2 = n_2
@@ -28,22 +28,29 @@ class MultipleSurfaces:
         self.component_counter = component_counter
         self.assembly_counter = assembly_counter
         self.components_name = components_name
-        self.write_tcl()
+        self.write_tcl(curve)
 
-    def list_creation(self, i, j, k):
+    def list_creation(self, i, j, k, zeros):
         my_list = list((self.ids_1[i, j, k],
                         self.ids_2[i, j, k],
-                        self.ids_3[i, j, k - 1],
-                        self.ids_4[i, j, k]))
+                        self.ids_3[i, j, k - 1 + zeros],
+                        self.ids_4[i, j, k + zeros]))
         return my_list
 
-    def write_tcl(self):
+    def check_for_zeros(self, i, j, k):
+        check = 0
+        if self.ids_1[i, j, k] == 0 or self.ids_2[i, j, k] == 0:
+            check = 1
+        return check
+
+    def write_tcl(self, curve):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
             for i in range(0, self.n_1):
+                zeros = return_zeros(curve[i, :])
                 for j in range(0, self.n_2):
-                    for k in range(0, self.n_3):
-                        if k != 0:
-                            my_list = self.list_creation(i, j, k)
+                    for k in range(0, self.n_3 - zeros):
+                        if k != 0 and self.check_for_zeros(i, j, k) != 1:
+                            my_list = self.list_creation(i, j, k, zeros)
                             my_str = ' '.join(map(str, my_list))
                             cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
                             file.write(cmd)
@@ -59,7 +66,7 @@ class MultipleSurfaces:
                     '*startnotehistorystate {Moved surfaces into component "'
                     + self.components_name + '_%.0f"}\n' % (i + 1))
                 file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0, 0], self.surfaces[i, -1, -1]))
+                           % (self.surfaces[i, 0, 0], self.surfaces[i, -1, - zeros - 1]))
                 file.write('*movemark surfaces 1 "'
                            + self.components_name + '_%.0f"\n'
                            % (i + 1))
@@ -212,7 +219,7 @@ class RibStiffners:
                     '*startnotehistorystate {Moved surfaces into component "'
                     + self.components_name + '_%.0f"}\n' % (i + 1))
                 file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0], self.surfaces[i, -1]))
+                           % (self.surfaces[i, return_ith_from_zero(self.surfaces[i, :])], self.surfaces[i, -1]))
                 file.write('*movemark surfaces 1 "'
                            + self.components_name + '_%.0f"\n'
                            % (i + 1))
@@ -244,3 +251,12 @@ def return_ith_from_zero(vec):
         else:
             pass
     return id_1
+
+def return_zeros(vec):
+    n_1 = len(vec)
+    id_1 = 0
+    for i in range(0, n_1):
+        if vec[i] == 0:
+            id_1 += 1
+    return id_1
+

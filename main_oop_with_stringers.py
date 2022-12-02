@@ -55,9 +55,9 @@ parameters = Parameters(
     29.38,  # Semi-span
     0.37,   # Yehudi break normalized
     2,      # Number of spars
-    3,      # Number of central ribs
-    5,      # Number of ribs from fuselage till yehudi break
-    8,     # Number of ribs from yehudi break till semi-span
+    5,      # Number of central ribs
+    10,      # Number of ribs from fuselage till yehudi break
+    30,     # Number of ribs from yehudi break till semi-span
     0.15,    # front spar position
     0.75,    # rear spar position
     0.1,    # fuselage section normalized
@@ -663,47 +663,50 @@ Surfaces_Right_Side_Lower_Skin =\
         Surfaces_Right_Side_Upper_Skin.assembly_counter,
         'Lower_Skin_Right_Side')
 
-# Surfaces_Main_Rib =\
-#     triple_surface_classes.MultipleSurfaces(
-#         N_RIBS,
-#         N_SPARS - 1,
-#         N_STRINGERS_PER_SECT,
-#         Curve_Upper_Rib.sections_id.main_skin,
-#         Curve_Lower_Rib.sections_id.main_skin,
-#         Curve_Stringer_In_Ribs.curves,
-#         Curve_Stringer_In_Ribs.curves,
-#         Surfaces_Right_Side_Lower_Skin.surface_counter,
-#         Surfaces_Right_Side_Lower_Skin.component_counter,
-#         Surfaces_Right_Side_Lower_Skin.assembly_counter,
-#         'Main_Rib')
+Surfaces_Main_Rib =\
+    triple_surface_classes.MultipleSurfaces(
+        N_RIBS,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Stringer_In_Ribs.curves,
+        Curve_Stringer_In_Ribs.curves,
+        Surfaces_Right_Side_Lower_Skin.surface_counter,
+        Surfaces_Right_Side_Lower_Skin.component_counter,
+        Surfaces_Right_Side_Lower_Skin.assembly_counter,
+        'Main_Rib',
+        Curve_Upper_Rib.curves)
 
-# Surfaces_Upper_Skin =\
-#     triple_surface_classes.MultipleSurfaces(
-#         N_RIBS - 1,
-#         N_SPARS - 1,
-#         N_STRINGERS_PER_SECT,
-#         Curve_Upper_Rib.sections_id.main_skin,
-#         Curve_Upper_Rib.sections_id.main_skin,
-#         Curve_Upper_Stringers.curves,
-#         Curve_Upper_Stringers.curves,
-#         Surfaces_Main_Rib.surface_counter,
-#         Surfaces_Main_Rib.component_counter,
-#         Surfaces_Main_Rib.assembly_counter,
-#         'Upper_Skin')
+Surfaces_Upper_Skin =\
+    triple_surface_classes.MultipleSurfaces(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Stringers.curves,
+        Curve_Upper_Stringers.curves,
+        Surfaces_Main_Rib.surface_counter,
+        Surfaces_Main_Rib.component_counter,
+        Surfaces_Main_Rib.assembly_counter,
+        'Upper_Skin',
+        Curve_Upper_Rib.curves)
 
-# Surfaces_Lower_Skin =\
-#     triple_surface_classes.MultipleSurfaces(
-#         N_RIBS - 1,
-#         N_SPARS - 1,
-#         N_STRINGERS_PER_SECT,
-#         Curve_Lower_Rib.sections_id.main_skin,
-#         Curve_Lower_Rib.sections_id.main_skin,
-#         Curve_Lower_Stringers.curves,
-#         Curve_Lower_Stringers.curves,
-#         Surfaces_Upper_Skin.surface_counter,
-#         Surfaces_Upper_Skin.component_counter,
-#         Surfaces_Upper_Skin.assembly_counter,
-#         'Lower_Skin')
+Surfaces_Lower_Skin =\
+    triple_surface_classes.MultipleSurfaces(
+        N_RIBS - 1,
+        N_SPARS - 1,
+        N_STRINGERS_PER_SECT,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Stringers.curves,
+        Curve_Lower_Stringers.curves,
+        Surfaces_Upper_Skin.surface_counter,
+        Surfaces_Upper_Skin.component_counter,
+        Surfaces_Upper_Skin.assembly_counter,
+        'Lower_Skin',
+        Curve_Upper_Rib.curves)
 
 Surfaces_Upper_Stringers =\
     triple_surface_classes.StringerSurfaces(
@@ -712,9 +715,9 @@ Surfaces_Upper_Stringers =\
         N_STRINGERS_PER_SECT,
         Curve_Upper_Stringers.curves,
         Curve_Upper_Stringers_Extend.curves,
-        Surfaces_Right_Side_Lower_Skin.surface_counter,
-        Surfaces_Right_Side_Lower_Skin.component_counter,
-        Surfaces_Right_Side_Lower_Skin.assembly_counter,
+        Surfaces_Lower_Skin.surface_counter,
+        Surfaces_Lower_Skin.component_counter,
+        Surfaces_Lower_Skin.assembly_counter,
         'Upper_Stringers')
 
 Surfaces_Upper_Stringers_L =\
@@ -802,31 +805,31 @@ Surfaces_Lower_Stringers_L =\
 #         'Rib_Caps_Lower_2')
 
 
-# Surfaces_Rib_Stiffeners_1 =\
-#     triple_surface_classes.RibStiffners(
-#         N_RIBS - 1,
-#         N_STRINGERS,
-#         Stringer_ID_Upper[0, :, :],
-#         Stringer_ID_Upper[1, :, :],
-#         Stringer_ID_Lower[1, :, :],
-#         Stringer_ID_Lower[0, :, :],
-#         Surfaces_Rib_Caps_Lower_2.surface_counter,
-#         Surfaces_Rib_Caps_Lower_2.component_counter,
-#         Surfaces_Rib_Caps_Lower_2.assembly_counter,
-#         'Rib_Stiffeners_1')
+Surfaces_Rib_Stiffeners_1 =\
+    triple_surface_classes.RibStiffners(
+        N_RIBS - 1,
+        N_STRINGERS,
+        Stringer_ID_Upper[0, :, :],
+        Stringer_ID_Upper[1, :, :],
+        Stringer_ID_Lower[1, :, :],
+        Stringer_ID_Lower[0, :, :],
+        Surfaces_Lower_Stringers_L.surface_counter,
+        Surfaces_Lower_Stringers_L.component_counter,
+        Surfaces_Lower_Stringers_L.assembly_counter,
+        'Rib_Stiffeners_1')
 
-# Surfaces_Rib_Stiffeners_2 =\
-#     triple_surface_classes.RibStiffners(
-#         N_RIBS - 1,
-#         N_STRINGERS,
-#         Stringer_ID_Upper[0, 1:, :],
-#         Stringer_ID_Upper[2, 1:, :],
-#         Stringer_ID_Lower[2, 1:, :],
-#         Stringer_ID_Lower[0, 1:, :],
-#         Surfaces_Rib_Stiffeners_1.surface_counter,
-#         Surfaces_Rib_Stiffeners_1.component_counter,
-#         Surfaces_Rib_Stiffeners_1.assembly_counter,
-#         'Rib_Stiffeners_2')
+Surfaces_Rib_Stiffeners_2 =\
+    triple_surface_classes.RibStiffners(
+        N_RIBS - 1,
+        N_STRINGERS,
+        Stringer_ID_Upper[0, 1:, :],
+        Stringer_ID_Upper[2, 1:, :],
+        Stringer_ID_Lower[2, 1:, :],
+        Stringer_ID_Lower[0, 1:, :],
+        Surfaces_Rib_Stiffeners_1.surface_counter,
+        Surfaces_Rib_Stiffeners_1.component_counter,
+        Surfaces_Rib_Stiffeners_1.assembly_counter,
+        'Rib_Stiffeners_2')
 
 
 # surface_classes.CutRibHoles(
@@ -841,7 +844,7 @@ Surfaces_Lower_Stringers_L =\
 #     N_RIBS,
 #     N_SPARS)
 
-# SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
+SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
 
 # For rib's holes
 # Create circles in each of the stringer point with a radius equal to stringers height
@@ -851,13 +854,13 @@ Surfaces_Lower_Stringers_L =\
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
-    # file.write("*nodecleartempmark\n")
+    file.write("*nodecleartempmark\n")
     # Clean-up the geometry
-    # my_list = list(range(1, SURFACE_COUNTER + 1))
-    # STR_IDS = ' '.join(map(str, my_list))
-    # CMD = "*createmark surfaces 1 " + STR_IDS
-    # file.write(CMD)
-    # file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
+    my_list = list(range(1, SURFACE_COUNTER + 1))
+    STR_IDS = ' '.join(map(str, my_list))
+    CMD = "*createmark surfaces 1 " + STR_IDS
+    file.write(CMD)
+    file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
     # Save the file and close
     file.write("*writefile \"C:/Users/efilippo/Documents/"
                "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")

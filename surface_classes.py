@@ -27,17 +27,24 @@ class MultipleSurfacesThreeCurves:
                         self.ids_3[i, j]))
         return my_list
 
+    def check_for_zeros(self, i, j):
+        check = 0
+        if self.ids_1[i, j] == 0:
+            check = 1
+        return check
+
     def write_tcl(self):
         with open('Wing_Geometry_Generation.tcl', 'a+') as file:
             for i in range(0, self.n_1):
                 for j in range(0, self.n_2):
-                    my_list = self.list_creation(i, j)
-                    my_str = ' '.join(map(str, my_list))
-                    cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
-                    file.write(cmd)
-                    file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
-                    self.surface_counter += 1
-                    self.surfaces[i, j] = self.surface_counter
+                    if self.check_for_zeros(i, j) != 1:
+                        my_list = self.list_creation(i, j)
+                        my_str = ' '.join(map(str, my_list))
+                        cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
+                        file.write(cmd)
+                        file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
+                        self.surface_counter += 1
+                        self.surfaces[i, j] = self.surface_counter
                 self.component_counter += 1
                 self.components[i, 0] = self.component_counter
                 file.write('*createentity comps name="'
@@ -47,7 +54,7 @@ class MultipleSurfacesThreeCurves:
                     '*startnotehistorystate {Moved surfaces into component "'
                     + self.components_name + '_%.0f"}\n' % (i + 1))
                 file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0], self.surfaces[i, -1]))
+                           % (self.surfaces[i, 0], self.surfaces[i, return_first_zero(self.surfaces[i, :]) - 1]))
                 file.write('*movemark surfaces 1 "'
                            + self.components_name + '_%.0f"\n'
                            % (i + 1))
@@ -104,7 +111,7 @@ class MultipleSurfaces:
                     my_str = ' '.join(map(str, my_list))
                     cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
                     file.write(cmd)
-                    file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
+                    file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
                     self.surface_counter += 1
                     self.surfaces[i, j] = self.surface_counter
                 self.component_counter += 1
@@ -267,6 +274,28 @@ class LeftSideOfSkins(MultipleSurfaces):
                         self.ids_3[i, j],
                         self.ids_4[i, j, 0]))
         return my_list
+    # def list_creation(self, i, j):
+    #     # print(return_zeros(self.ids_1[i, :]))
+    #     if return_zeros(self.ids_1[i, :]) == return_zeros(self.ids_1[i + 1, :]):
+    #         my_list = list((self.ids_1[i, 3],
+    #                         self.ids_2[i + 1, 3],
+    #                         self.ids_3[i, j],
+    #                         self.ids_4[i, j, 0]))
+    #     else:
+    #         # space = int(abs(return_zeros(self.ids_1[i, :]) - return_zeros(self.ids_1[i - 1, :])))
+    #         my_list = list((self.ids_1[i, 3],
+    #                         self.ids_1[i, 3 + 1],
+    #                         self.ids_2[i + 1, 3],
+    #                         self.ids_3[i, j],
+    #                         self.ids_4[i, j, 0]))
+            # for k in range(0, space):
+            #     my_list.append(self.ids_1[i, 3 + i])
+        # my_list = list((self.ids_1[i, 3],
+        #                 self.ids_2[i + 1, 3],
+        #                 self.ids_3[i, j],
+        #                 self.ids_4[i, j, 0]))
+        # return my_list
+
 
 
 class RightSideOfSkins(MultipleSurfaces):
@@ -381,6 +410,22 @@ class RibCaps(MultipleSurfacesThreeCurves):
                         self.ids_3[i, j]))
         return my_list
 
+    def check_for_zeros(self, i, j):
+        check = 0
+        if self.ids_1[i, j] == 0 or self.ids_2[i, j + 1] == 0:
+            check = 1
+        return check
+
+def return_zers(vec, id_from_zero):
+    n_1 = len(vec)
+    id_1 = 0
+    for i in range(0, n_1):
+        if vec[i] == 0:
+            id_1 = i - id_from_zero
+            break
+        else:
+            id_1 = - id_from_zero
+    return id_1
 
 def return_ith_from_zero(vec, id_from_zero):
     n_1 = len(vec)
@@ -391,4 +436,23 @@ def return_ith_from_zero(vec, id_from_zero):
             break
         else:
             id_1 = - id_from_zero
+    return id_1
+
+def return_zeros(vec):
+    n_1 = len(vec)
+    id_1 = 0
+    for i in range(0, n_1):
+        if vec[i] == 0:
+            id_1 += 1
+    return id_1
+
+def return_first_zero(vec):
+    n_1 = len(vec)
+    id_1 = 0
+    for i in range(0, n_1):
+        if vec[i] == 0:
+            id_1 = i
+            break
+        else:
+            pass
     return id_1
