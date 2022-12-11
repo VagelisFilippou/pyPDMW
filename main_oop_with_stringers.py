@@ -36,6 +36,8 @@ from connection_nodes import ConnectionNodes
 import curve_classes
 import surface_classes
 import triple_surface_classes
+import components_classes
+import Mesh_Generation
 from run_arg import run_argument
 from delete_files import delete_files
 
@@ -54,12 +56,12 @@ delete_files()
 parameters = Parameters(
     29.38,  # Semi-span
     0.37,   # Yehudi break normalized
-    4,      # Number of spars
-    5,      # Number of central ribs
+    3,      # Number of spars
+    3,      # Number of central ribs
     5,     # Number of ribs from fuselage till yehudi break
-    8,     # Number of ribs from yehudi break till semi-span
+    10,     # Number of ribs from yehudi break till semi-span
     0.15,   # front spar position
-    0.75,   # rear spar position``
+    0.75,   # rear spar position
     0.1,    # fuselage section normalized
     0.3,    # Root left spar cap width
     0.3,    # Root right spar cap width
@@ -139,7 +141,7 @@ plt.scatter(Stringers_X, Stringers_Y, 5, marker='o')
 NODE_COUNTER = 0
 CURVE_COUNTER = 0
 SURFACE_COUNTER = 0
-COMPONENT_COUNTER = 1  # =1 because of the initial component
+COMPONENT_COUNTER = 2  # =2 because of the initial component
 ASSEMBLY_COUNTER = 1
 # Open a .tcl file and write the commands there
 with open('Wing_Geometry_Generation.tcl', 'w') as file:
@@ -419,30 +421,24 @@ Curve_Rib_Stiffener_Y_Lower_2 =\
 
 
 Surfaces_Left_Spar_Cap_Rib =\
-    surface_classes.MultipleSurfaces(
+    surface_classes.MultipleSurfacesFourCurves(
         N_RIBS,
         N_SPARS,
         Curve_Upper_Rib.sections_id.SC_L,
         Curve_Lower_Rib.sections_id.SC_L,
         Curve_Left_Spar_Cap_In_Ribs.curves,
         Curve_Spar_In_Ribs.curves,
-        SURFACE_COUNTER,
-        COMPONENT_COUNTER,
-        ASSEMBLY_COUNTER,
-        'L_Spar_Cap_Rib')
+        SURFACE_COUNTER)
 
 Surfaces_Right_Spar_Cap_Rib =\
-    surface_classes.MultipleSurfaces(
+    surface_classes.MultipleSurfacesFourCurves(
         N_RIBS,
         N_SPARS,
         Curve_Upper_Rib.sections_id.SC_R,
         Curve_Lower_Rib.sections_id.SC_R,
         Curve_Right_Spar_Cap_In_Ribs.curves,
         Curve_Spar_In_Ribs.curves,
-        Surfaces_Left_Spar_Cap_Rib.surface_counter,
-        Surfaces_Left_Spar_Cap_Rib.component_counter,
-        Surfaces_Left_Spar_Cap_Rib.assembly_counter,
-        'R_Spar_Cap_Rib')
+        Surfaces_Left_Spar_Cap_Rib.surface_counter)
 
 Surfaces_Spars =\
     surface_classes.SparSurfaces(
@@ -452,10 +448,7 @@ Surfaces_Spars =\
         Curve_Lower_Spar.curves,
         Curve_Spar_In_Ribs.curves,
         Curve_Spar_In_Ribs.curves,
-        Surfaces_Right_Spar_Cap_Rib.surface_counter,
-        Surfaces_Right_Spar_Cap_Rib.component_counter,
-        Surfaces_Right_Spar_Cap_Rib.assembly_counter,
-        'Spars')
+        Surfaces_Right_Spar_Cap_Rib.surface_counter)
 
 Surfaces_Front_Upper_Skin =\
     surface_classes.FrontSkins(
@@ -464,10 +457,7 @@ Surfaces_Front_Upper_Skin =\
         Curve_Upper_Rib.sections_id.LE,
         Curve_Upper_Left_Spar_Cap.curves,
         Curve_Leading_Edge.curves,
-        Surfaces_Spars.surface_counter,
-        Surfaces_Spars.component_counter,
-        Surfaces_Spars.assembly_counter,
-        'Upper_Front_Skin')
+        Surfaces_Spars.surface_counter)
 
 Surfaces_Front_Lower_Skin =\
     surface_classes.FrontSkins(
@@ -476,10 +466,7 @@ Surfaces_Front_Lower_Skin =\
         Curve_Lower_Rib.sections_id.LE,
         Curve_Lower_Left_Spar_Cap.curves,
         Curve_Leading_Edge.curves,
-        Surfaces_Front_Upper_Skin.surface_counter,
-        Surfaces_Front_Upper_Skin.component_counter,
-        Surfaces_Front_Upper_Skin.assembly_counter,
-        'Lower_Front_Skin')
+        Surfaces_Front_Upper_Skin.surface_counter)
 
 Surfaces_Rear_Upper_Skin =\
     surface_classes.RearSkins(
@@ -488,10 +475,7 @@ Surfaces_Rear_Upper_Skin =\
         Curve_Upper_Rib.sections_id.TE,
         Curve_Upper_Right_Spar_Cap.curves,
         Curve_Trailing_Edge.curves,
-        Surfaces_Front_Lower_Skin.surface_counter,
-        Surfaces_Front_Lower_Skin.component_counter,
-        Surfaces_Front_Lower_Skin.assembly_counter,
-        'Upper_Rear_Skin')
+        Surfaces_Front_Lower_Skin.surface_counter)
 
 Surfaces_Rear_Lower_Skin =\
     surface_classes.RearSkins(
@@ -500,10 +484,7 @@ Surfaces_Rear_Lower_Skin =\
         Curve_Lower_Rib.sections_id.TE,
         Curve_Lower_Right_Spar_Cap.curves,
         Curve_Trailing_Edge.curves,
-        Surfaces_Rear_Upper_Skin.surface_counter,
-        Surfaces_Rear_Upper_Skin.component_counter,
-        Surfaces_Rear_Upper_Skin.assembly_counter,
-        'Lower_Rear_Skin')
+        Surfaces_Rear_Upper_Skin.surface_counter)
 
 Surfaces_Front_Rib =\
     surface_classes.FrontRib(
@@ -511,10 +492,7 @@ Surfaces_Front_Rib =\
         Curve_Lower_Rib.sections_id.LE,
         Curve_Upper_Rib.sections_id.LE,
         Curve_Left_Spar_Cap_In_Ribs.curves,
-        Surfaces_Rear_Lower_Skin.surface_counter,
-        Surfaces_Rear_Lower_Skin.component_counter,
-        Surfaces_Rear_Lower_Skin.assembly_counter,
-        'Front_Rib')
+        Surfaces_Rear_Lower_Skin.surface_counter)
 
 Surfaces_Rear_Rib =\
     surface_classes.RearRib(
@@ -522,10 +500,7 @@ Surfaces_Rear_Rib =\
         Curve_Lower_Rib.sections_id.TE,
         Curve_Upper_Rib.sections_id.TE,
         Curve_Right_Spar_Cap_In_Ribs.curves,
-        Surfaces_Front_Rib.surface_counter,
-        Surfaces_Front_Rib.component_counter,
-        Surfaces_Front_Rib.assembly_counter,
-        'Rear_Rib')
+        Surfaces_Front_Rib.surface_counter)
 
 Surfaces_Upper_Left_Spar_Cap =\
     surface_classes.SparCapsSurfaces(
@@ -535,10 +510,7 @@ Surfaces_Upper_Left_Spar_Cap =\
         Curve_Upper_Spar.curves,
         Curve_Upper_Rib.sections_id.SC_L,
         Curve_Upper_Rib.sections_id.SC_L,
-        Surfaces_Rear_Rib.surface_counter,
-        Surfaces_Rear_Rib.component_counter,
-        Surfaces_Rear_Rib.assembly_counter,
-        'Upper_Left_Spar_Cap')
+        Surfaces_Rear_Rib.surface_counter)
 
 Surfaces_Upper_Right_Spar_Cap =\
     surface_classes.SparCapsSurfaces(
@@ -548,10 +520,7 @@ Surfaces_Upper_Right_Spar_Cap =\
         Curve_Upper_Spar.curves,
         Curve_Upper_Rib.sections_id.SC_R,
         Curve_Upper_Rib.sections_id.SC_R,
-        Surfaces_Upper_Left_Spar_Cap.surface_counter,
-        Surfaces_Upper_Left_Spar_Cap.component_counter,
-        Surfaces_Upper_Left_Spar_Cap.assembly_counter,
-        'Upper_Right_Spar_Cap')
+        Surfaces_Upper_Left_Spar_Cap.surface_counter)
 
 Surfaces_Lower_Right_Spar_Cap =\
     surface_classes.SparCapsSurfaces(
@@ -561,10 +530,7 @@ Surfaces_Lower_Right_Spar_Cap =\
         Curve_Lower_Spar.curves,
         Curve_Lower_Rib.sections_id.SC_R,
         Curve_Lower_Rib.sections_id.SC_R,
-        Surfaces_Upper_Right_Spar_Cap.surface_counter,
-        Surfaces_Upper_Right_Spar_Cap.component_counter,
-        Surfaces_Upper_Right_Spar_Cap.assembly_counter,
-        'Lower_Right_Spar_Cap')
+        Surfaces_Upper_Right_Spar_Cap.surface_counter)
 
 Surfaces_Lower_Left_Spar_Cap =\
     surface_classes.SparCapsSurfaces(
@@ -574,10 +540,7 @@ Surfaces_Lower_Left_Spar_Cap =\
         Curve_Lower_Spar.curves,
         Curve_Lower_Rib.sections_id.SC_L,
         Curve_Lower_Rib.sections_id.SC_L,
-        Surfaces_Lower_Right_Spar_Cap.surface_counter,
-        Surfaces_Lower_Right_Spar_Cap.component_counter,
-        Surfaces_Lower_Right_Spar_Cap.assembly_counter,
-        'Lower_Left_Spar_Cap')
+        Surfaces_Lower_Right_Spar_Cap.surface_counter)
 
 Surfaces_Left_Side_Main_Rib =\
     surface_classes.LeftSideOfMainRibSurfaces(
@@ -587,10 +550,7 @@ Surfaces_Left_Side_Main_Rib =\
         Curve_Lower_Rib.sections_id.main_skin,
         Curve_Right_Spar_Cap_In_Ribs.curves,
         Curve_Stringer_In_Ribs.curves,
-        Surfaces_Lower_Left_Spar_Cap.surface_counter,
-        Surfaces_Lower_Left_Spar_Cap.component_counter,
-        Surfaces_Lower_Left_Spar_Cap.assembly_counter,
-        'Main_Rib_Left_Side')
+        Surfaces_Lower_Left_Spar_Cap.surface_counter)
 
 Surfaces_Right_Side_Main_Rib =\
     surface_classes.RightSideOfMainRibSurfaces(
@@ -600,10 +560,7 @@ Surfaces_Right_Side_Main_Rib =\
         Curve_Lower_Rib.sections_id.main_skin,
         Curve_Left_Spar_Cap_In_Ribs.curves,
         Curve_Stringer_In_Ribs.curves,
-        Surfaces_Left_Side_Main_Rib.surface_counter,
-        Surfaces_Left_Side_Main_Rib.component_counter,
-        Surfaces_Left_Side_Main_Rib.assembly_counter,
-        'Main_Rib_Right_Side')
+        Surfaces_Left_Side_Main_Rib.surface_counter)
 
 Surfaces_Left_Side_Upper_Skin =\
     surface_classes.LeftSideOfSkins(
@@ -613,11 +570,7 @@ Surfaces_Left_Side_Upper_Skin =\
         Curve_Upper_Rib.sections_id.main_skin,
         Curve_Upper_Right_Spar_Cap.curves,
         Curve_Upper_Stringers.curves,
-        Surfaces_Right_Side_Main_Rib.surface_counter,
-        Surfaces_Right_Side_Main_Rib.component_counter,
-        Surfaces_Right_Side_Main_Rib.assembly_counter,
-        'Upper_Skin_Left_Side')
-
+        Surfaces_Right_Side_Main_Rib.surface_counter)
 
 Surfaces_Left_Side_Lower_Skin =\
     surface_classes.LeftSideOfSkins(
@@ -627,10 +580,7 @@ Surfaces_Left_Side_Lower_Skin =\
         Curve_Lower_Rib.sections_id.main_skin,
         Curve_Lower_Right_Spar_Cap.curves,
         Curve_Lower_Stringers.curves,
-        Surfaces_Left_Side_Upper_Skin.surface_counter,
-        Surfaces_Left_Side_Upper_Skin.component_counter,
-        Surfaces_Left_Side_Upper_Skin.assembly_counter,
-        'Lower_Skin_Left_Side')
+        Surfaces_Left_Side_Upper_Skin.surface_counter)
 
 
 Surfaces_Right_Side_Upper_Skin =\
@@ -641,10 +591,7 @@ Surfaces_Right_Side_Upper_Skin =\
         Curve_Upper_Rib.sections_id.main_skin,
         Curve_Upper_Left_Spar_Cap.curves,
         Curve_Upper_Stringers.curves,
-        Surfaces_Left_Side_Lower_Skin.surface_counter,
-        Surfaces_Left_Side_Lower_Skin.component_counter,
-        Surfaces_Left_Side_Lower_Skin.assembly_counter,
-        'Upper_Skin_Right_Side')
+        Surfaces_Left_Side_Lower_Skin.surface_counter)
 
 Surfaces_Right_Side_Lower_Skin =\
     surface_classes.RightSideOfSkins(
@@ -654,10 +601,7 @@ Surfaces_Right_Side_Lower_Skin =\
         Curve_Lower_Rib.sections_id.main_skin,
         Curve_Lower_Left_Spar_Cap.curves,
         Curve_Lower_Stringers.curves,
-        Surfaces_Right_Side_Upper_Skin.surface_counter,
-        Surfaces_Right_Side_Upper_Skin.component_counter,
-        Surfaces_Right_Side_Upper_Skin.assembly_counter,
-        'Lower_Skin_Right_Side')
+        Surfaces_Right_Side_Upper_Skin.surface_counter)
 
 Surfaces_Main_Rib =\
     triple_surface_classes.MultipleSurfaces(
@@ -668,10 +612,7 @@ Surfaces_Main_Rib =\
         Curve_Lower_Rib.sections_id.main_skin,
         Curve_Stringer_In_Ribs.curves,
         Curve_Stringer_In_Ribs.curves,
-        Surfaces_Right_Side_Lower_Skin.surface_counter,
-        Surfaces_Right_Side_Lower_Skin.component_counter,
-        Surfaces_Right_Side_Lower_Skin.assembly_counter,
-        'Main_Rib')
+        Surfaces_Right_Side_Lower_Skin.surface_counter)
 
 Surfaces_Upper_Skin =\
     triple_surface_classes.MultipleSurfaces(
@@ -682,10 +623,7 @@ Surfaces_Upper_Skin =\
         Curve_Upper_Rib.sections_id.main_skin,
         Curve_Upper_Stringers.curves,
         Curve_Upper_Stringers.curves,
-        Surfaces_Main_Rib.surface_counter,
-        Surfaces_Main_Rib.component_counter,
-        Surfaces_Main_Rib.assembly_counter,
-        'Upper_Skin')
+        Surfaces_Main_Rib.surface_counter)
 
 Surfaces_Lower_Skin =\
     triple_surface_classes.MultipleSurfaces(
@@ -696,10 +634,7 @@ Surfaces_Lower_Skin =\
         Curve_Lower_Rib.sections_id.main_skin,
         Curve_Lower_Stringers.curves,
         Curve_Lower_Stringers.curves,
-        Surfaces_Upper_Skin.surface_counter,
-        Surfaces_Upper_Skin.component_counter,
-        Surfaces_Upper_Skin.assembly_counter,
-        'Lower_Skin')
+        Surfaces_Upper_Skin.surface_counter)
 
 Surfaces_Upper_Stringers =\
     triple_surface_classes.StringerSurfaces(
@@ -708,10 +643,7 @@ Surfaces_Upper_Stringers =\
         N_STRINGERS_PER_SECT,
         Curve_Upper_Stringers.curves,
         Curve_Upper_Stringers_Extend.curves,
-        Surfaces_Lower_Skin.surface_counter,
-        Surfaces_Lower_Skin.component_counter,
-        Surfaces_Lower_Skin.assembly_counter,
-        'Upper_Stringers')
+        Surfaces_Lower_Skin.surface_counter)
 
 Surfaces_Upper_Stringers_L =\
     triple_surface_classes.StringerSurfaces(
@@ -720,10 +652,7 @@ Surfaces_Upper_Stringers_L =\
         N_STRINGERS_PER_SECT,
         Curve_Upper_Stringers_Extend.curves,
         Curve_Upper_Stringers_Extend_L.curves,
-        Surfaces_Upper_Stringers.surface_counter,
-        Surfaces_Upper_Stringers.component_counter,
-        Surfaces_Upper_Stringers.assembly_counter,
-        'Upper_Stringers_L')
+        Surfaces_Upper_Stringers.surface_counter)
 
 Surfaces_Lower_Stringers =\
     triple_surface_classes.StringerSurfaces(
@@ -732,10 +661,7 @@ Surfaces_Lower_Stringers =\
         N_STRINGERS_PER_SECT,
         Curve_Lower_Stringers.curves,
         Curve_Lower_Stringers_Extend.curves,
-        Surfaces_Upper_Stringers_L.surface_counter,
-        Surfaces_Upper_Stringers_L.component_counter,
-        Surfaces_Upper_Stringers_L.assembly_counter,
-        'Lower_Stringers')
+        Surfaces_Upper_Stringers_L.surface_counter)
 
 Surfaces_Lower_Stringers_L =\
     triple_surface_classes.StringerSurfaces(
@@ -744,10 +670,7 @@ Surfaces_Lower_Stringers_L =\
         N_STRINGERS_PER_SECT,
         Curve_Lower_Stringers_Extend.curves,
         Curve_Lower_Stringers_Extend_L.curves,
-        Surfaces_Lower_Stringers.surface_counter,
-        Surfaces_Lower_Stringers.component_counter,
-        Surfaces_Lower_Stringers.assembly_counter,
-        'Lower_Stringers_L')
+        Surfaces_Lower_Stringers.surface_counter)
 
 Surfaces_Rib_Caps_Upper_1 =\
     surface_classes.RibCaps(
@@ -756,10 +679,7 @@ Surfaces_Rib_Caps_Upper_1 =\
         Curve_Rib_Stiffener_Y_Upper_1.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Upper_1.curves[:, 1:-1],
         Curve_Upper_Rib.curves[:-1, 1:-1],
-        Surfaces_Lower_Stringers_L.surface_counter,
-        Surfaces_Lower_Stringers_L.component_counter,
-        Surfaces_Lower_Stringers_L.assembly_counter,
-        'Rib_Caps_Upper_1')
+        Surfaces_Lower_Stringers_L.surface_counter)
 
 Surfaces_Rib_Caps_Upper_2 =\
     surface_classes.RibCaps(
@@ -768,10 +688,7 @@ Surfaces_Rib_Caps_Upper_2 =\
         Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
         Curve_Upper_Rib.curves[1:, 1:-1],
-        Surfaces_Rib_Caps_Upper_1.surface_counter,
-        Surfaces_Rib_Caps_Upper_1.component_counter,
-        Surfaces_Rib_Caps_Upper_1.assembly_counter,
-        'Rib_Caps_Upper_2')
+        Surfaces_Rib_Caps_Upper_1.surface_counter)
 
 Surfaces_Rib_Caps_Lower_1 =\
     surface_classes.RibCaps(
@@ -780,10 +697,7 @@ Surfaces_Rib_Caps_Lower_1 =\
         Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
         Curve_Lower_Rib.curves[:-1, 1:-1],
-        Surfaces_Rib_Caps_Upper_2.surface_counter,
-        Surfaces_Rib_Caps_Upper_2.component_counter,
-        Surfaces_Rib_Caps_Upper_2.assembly_counter,
-        'Rib_Caps_Lower_1')
+        Surfaces_Rib_Caps_Upper_2.surface_counter)
 
 Surfaces_Rib_Caps_Lower_2 =\
     surface_classes.RibCaps(
@@ -792,10 +706,7 @@ Surfaces_Rib_Caps_Lower_2 =\
         Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
         Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
         Curve_Lower_Rib.curves[1:, 1:-1],
-        Surfaces_Rib_Caps_Lower_1.surface_counter,
-        Surfaces_Rib_Caps_Lower_1.component_counter,
-        Surfaces_Rib_Caps_Lower_1.assembly_counter,
-        'Rib_Caps_Lower_2')
+        Surfaces_Rib_Caps_Lower_1.surface_counter)
 
 
 Surfaces_Rib_Stiffeners_1 =\
@@ -806,10 +717,7 @@ Surfaces_Rib_Stiffeners_1 =\
         Stringer_ID_Upper[1, :, :],
         Stringer_ID_Lower[1, :, :],
         Stringer_ID_Lower[0, :, :],
-        Surfaces_Rib_Caps_Lower_2.surface_counter,
-        Surfaces_Rib_Caps_Lower_2.component_counter,
-        Surfaces_Rib_Caps_Lower_2.assembly_counter,
-        'Rib_Stiffeners_1')
+        Surfaces_Rib_Caps_Lower_2.surface_counter)
 
 Surfaces_Rib_Stiffeners_2 =\
     triple_surface_classes.RibStiffners(
@@ -819,11 +727,425 @@ Surfaces_Rib_Stiffeners_2 =\
         Stringer_ID_Upper[2, 1:, :],
         Stringer_ID_Lower[2, 1:, :],
         Stringer_ID_Lower[0, 1:, :],
-        Surfaces_Rib_Stiffeners_1.surface_counter,
-        Surfaces_Rib_Stiffeners_1.component_counter,
-        Surfaces_Rib_Stiffeners_1.assembly_counter,
-        'Rib_Stiffeners_2')
+        Surfaces_Rib_Stiffeners_1.surface_counter)
 
+SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
+
+Comp_Rib_Stiffeners = []
+for i in range(0, N_RIBS):
+    if i == 0:
+        Comp_Rib_Stiffeners.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Stiffeners',
+                Surfaces_Rib_Stiffeners_1.surfaces[i, :],
+                i)
+            )
+    elif i == N_RIBS - 1:
+        Comp_Rib_Stiffeners.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Stiffeners',
+                Surfaces_Rib_Stiffeners_2.surfaces[i - 1, :],
+                i)
+            )
+    elif i < N_RIBS - 1:
+        Comp_Rib_Stiffeners.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Stiffeners',
+                np.concatenate((Surfaces_Rib_Stiffeners_1.surfaces[i, :],
+                                Surfaces_Rib_Stiffeners_2.surfaces[i - 1, :]),
+                               axis=None),
+                i)
+            )
+    COMPONENT_COUNTER += 1
+
+Comp_Rib_Caps_Upper = []
+for i in range(0, N_RIBS):
+    if i == 0:
+        Comp_Rib_Caps_Upper.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Upper',
+                Surfaces_Rib_Caps_Upper_1.surfaces[i, :],
+                i)
+            )
+    elif i == N_RIBS - 1:
+        Comp_Rib_Caps_Upper.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Upper',
+                Surfaces_Rib_Caps_Upper_2.surfaces[i - 1, :],
+                i)
+            )
+    elif i < N_RIBS - 1:
+        Comp_Rib_Caps_Upper.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Upper',
+                np.concatenate((Surfaces_Rib_Caps_Upper_1.surfaces[i, :],
+                                Surfaces_Rib_Caps_Upper_2.surfaces[i - 1, :]),
+                               axis=None),
+                i)
+            )
+    COMPONENT_COUNTER += 1
+
+Comp_Rib_Caps_Lower = []
+for i in range(0, N_RIBS):
+    if i == 0:
+        Comp_Rib_Caps_Lower.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Lower',
+                Surfaces_Rib_Caps_Lower_1.surfaces[i, :],
+                i)
+            )
+    elif i == N_RIBS - 1:
+        Comp_Rib_Caps_Lower.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Lower',
+                Surfaces_Rib_Caps_Lower_2.surfaces[i - 1, :],
+                i)
+            )
+    elif i < N_RIBS - 1:
+        Comp_Rib_Caps_Lower.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Lower',
+                np.concatenate((Surfaces_Rib_Caps_Lower_1.surfaces[i, :],
+                                Surfaces_Rib_Caps_Lower_2.surfaces[i - 1, :]),
+                               axis=None),
+                i)
+            )
+    COMPONENT_COUNTER += 1
+
+Comp_Main_Rib = []
+for i in range(0, N_RIBS):
+    Comp_Main_Rib.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Ribs',
+            np.concatenate((
+                Surfaces_Main_Rib.surfaces[i, :, :],
+                Surfaces_Left_Side_Main_Rib.surfaces[i, :],
+                Surfaces_Right_Side_Main_Rib.surfaces[i, :],
+                Surfaces_Left_Spar_Cap_Rib.surfaces[i, :],
+                Surfaces_Right_Spar_Cap_Rib.surfaces[i, :],
+                ),
+                axis=None),
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Upper_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Upper_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Upper_Skin',
+            np.concatenate((
+                Surfaces_Upper_Skin.surfaces[i, :, :],
+                Surfaces_Left_Side_Upper_Skin.surfaces[i, :],
+                Surfaces_Right_Side_Upper_Skin.surfaces[i, :],
+                ),
+                axis=None),
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Lower_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Lower_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Lower_Skin',
+            np.concatenate((
+                Surfaces_Lower_Skin.surfaces[i, :, :],
+                Surfaces_Left_Side_Lower_Skin.surfaces[i, :],
+                Surfaces_Right_Side_Lower_Skin.surfaces[i, :],
+                ),
+                axis=None),
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Spars = {}
+for i in range(0, N_RIBS - 1):
+    for j in range(0, N_SPARS):
+        Comp_Spars[i, j] =\
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Spar_No_%.0f' % (j),
+                Surfaces_Spars.surfaces[i, j],
+                i)
+        COMPONENT_COUNTER += 1
+
+Comp_Upper_Spar_Caps = {}
+for i in range(0, N_RIBS - 1):
+    for j in range(0, N_SPARS):
+        Comp_Upper_Spar_Caps[i, j] =\
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Upper_Spar_Cap_No_%.0f' % (j),
+                np.concatenate((
+                    Surfaces_Upper_Left_Spar_Cap.surfaces[i, j],
+                    Surfaces_Upper_Right_Spar_Cap.surfaces[i, j]
+                    ),
+                    axis=None),
+                i)
+        COMPONENT_COUNTER += 1
+
+Comp_Lower_Spar_Caps = {}
+for i in range(0, N_RIBS - 1):
+    for j in range(0, N_SPARS):
+        Comp_Lower_Spar_Caps[i, j] =\
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Lower_Spar_Cap_No_%.0f' % (j),
+                np.concatenate((
+                    Surfaces_Lower_Left_Spar_Cap.surfaces[i, j],
+                    Surfaces_Lower_Right_Spar_Cap.surfaces[i, j]
+                    ),
+                    axis=None),
+                i)
+        COMPONENT_COUNTER += 1
+
+Comp_Upper_Stringers_Z = []
+for i in range(0, N_RIBS - 1):
+    Comp_Upper_Stringers_Z.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Upper_Stringers_Z',
+            Surfaces_Upper_Stringers.surfaces[i, :, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Upper_Stringers_X = []
+for i in range(0, N_RIBS - 1):
+    Comp_Upper_Stringers_X.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Upper_Stringers_X',
+            Surfaces_Upper_Stringers_L.surfaces[i, :, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Lower_Stringers_Z = []
+for i in range(0, N_RIBS - 1):
+    Comp_Lower_Stringers_Z.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Lower_Stringers_Z',
+            Surfaces_Lower_Stringers.surfaces[i, :, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Lower_Stringers_X = []
+for i in range(0, N_RIBS - 1):
+    Comp_Lower_Stringers_X.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Lower_Stringers_X',
+            Surfaces_Lower_Stringers_L.surfaces[i, :, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Front_Rib = []
+for i in range(0, N_RIBS):
+    Comp_Front_Rib.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Front_Rib',
+            Surfaces_Front_Rib.surfaces[i, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Rear_Rib = []
+for i in range(0, N_RIBS):
+    Comp_Rear_Rib.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Rear_Rib',
+            Surfaces_Rear_Rib.surfaces[i, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Front_Upper_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Front_Upper_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Front_Upper_Skin',
+            Surfaces_Front_Upper_Skin.surfaces[i, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Front_Lower_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Front_Lower_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Front_Lower_Skin',
+            Surfaces_Front_Lower_Skin.surfaces[i, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Rear_Upper_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Rear_Upper_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Rear_Upper_Skin',
+            Surfaces_Rear_Upper_Skin.surfaces[i, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Rear_Lower_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Rear_Lower_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Rear_Lower_Skin',
+            Surfaces_Rear_Lower_Skin.surfaces[i, :],
+            i)
+        )
+    COMPONENT_COUNTER += 1
+
+
+Assembly_Rib_Stiffeners =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rib_Stiffeners',
+        [ComponentClass.id for ComponentClass in Comp_Rib_Stiffeners])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Rib_Caps =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rib_Caps',
+        [ComponentClass.id for ComponentClass in Comp_Rib_Caps_Upper] +
+        [ComponentClass.id for ComponentClass in Comp_Rib_Caps_Lower])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Upper_Stringers =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Upper_Stringers',
+        [ComponentClass.id for ComponentClass in Comp_Upper_Stringers_X] +
+        [ComponentClass.id for ComponentClass in Comp_Upper_Stringers_Z])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Lower_Stringers =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Lower_Stringers',
+        [ComponentClass.id for ComponentClass in Comp_Lower_Stringers_X] +
+        [ComponentClass.id for ComponentClass in Comp_Lower_Stringers_Z])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Upper_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Upper_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Upper_Skin])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Lower_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Lower_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Lower_Skin])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Main_Rib =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Main_Rib',
+        [ComponentClass.id for ComponentClass in Comp_Main_Rib])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Front_Rib =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Front_Rib',
+        [ComponentClass.id for ComponentClass in Comp_Front_Rib])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Rear_Rib =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rear_Rib',
+        [ComponentClass.id for ComponentClass in Comp_Rear_Rib])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Rear_Upper_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rear_Upper_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Rear_Upper_Skin])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Rear_Lower_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rear_Lower_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Rear_Lower_Skin])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Front_Upper_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Front_Upper_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Front_Upper_Skin])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Front_Lower_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Front_Lower_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Front_Lower_Skin])
+ASSEMBLY_COUNTER += 1
+
+Assembly_Spars = []
+for i in range(0, N_SPARS):
+    comp_list = []
+    for j in range(0, N_RIBS - 1):
+        comp_list.append(Comp_Spars[j, i].id)
+    Assembly_Spars.append(components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Spars_No_%.0f' % (i), comp_list))
+    ASSEMBLY_COUNTER += 1
+    # Mesh_Generation.GenerateMesh(np.concatenate(
+    #     [ComponentClass.surfaces for ComponentClass in comp_list]).ravel())
+
+Assembly_Spar_Caps = []
+for i in range(0, N_SPARS):
+    comp_list = []
+    for j in range(0, N_RIBS - 1):
+        comp_list.append(Comp_Upper_Spar_Caps[j, i].id)
+        comp_list.append(Comp_Lower_Spar_Caps[j, i].id)
+    Assembly_Spar_Caps.append(components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Spar_Caps_No_%.0f' % (i), comp_list))
+    ASSEMBLY_COUNTER += 1
+
+for i in range(0, N_SPARS):
+    comp_list = []
+    for j in range(0, N_RIBS - 1):
+        comp_list.append(Comp_Spars[j, i].surfaces)
+    comp_list = [float(i) for i in comp_list]
+    Mesh_Generation.GenerateMesh(comp_list)
+for i in range(0, N_SPARS):
+    comp_list = []
+    for j in range(0, N_RIBS - 1):
+        comp_list.append(Comp_Upper_Spar_Caps[j, i].surfaces)
+        comp_list.append(Comp_Lower_Spar_Caps[j, i].surfaces)
+    comp_list = np.concatenate(np.vstack(comp_list))
+    Mesh_Generation.GenerateMesh(comp_list)
+
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Main_Rib]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Lower_Skin]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Upper_Skin]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Lower_Stringers_X]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Lower_Stringers_Z]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Upper_Stringers_X]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Upper_Stringers_Z]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Rib_Caps_Upper]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Rib_Caps_Lower]).ravel())
+Mesh_Generation.GenerateMesh(np.concatenate(
+    [ComponentClass.surfaces for ComponentClass in Comp_Rib_Stiffeners]).ravel())
+# Mesh_Generation.GenerateMesh(np.concatenate(
+#     [ComponentClass.surfaces for ComponentClass in Comp_Front_Rib]).ravel())
+# Mesh_Generation.GenerateMesh(np.concatenate(
+#     [ComponentClass.surfaces for ComponentClass in Comp_Rear_Rib]).ravel())
+# Mesh_Generation.GenerateMesh(np.concatenate(
+#     [ComponentClass.surfaces for ComponentClass in Comp_Front_Upper_Skin]).ravel())
+# Mesh_Generation.GenerateMesh(np.concatenate(
+#     [ComponentClass.surfaces for ComponentClass in Comp_Front_Lower_Skin]).ravel())
+# Mesh_Generation.GenerateMesh(np.concatenate(
+#     [ComponentClass.surfaces for ComponentClass in Comp_Rear_Upper_Skin]).ravel())
+# Mesh_Generation.GenerateMesh(np.concatenate(
+#     [ComponentClass.surfaces for ComponentClass in Comp_Rear_Lower_Skin]).ravel())
 
 # surface_classes.CutRibHoles(
 #     Surfaces_Main_Rib.surfaces,
@@ -837,7 +1159,6 @@ Surfaces_Rib_Stiffeners_2 =\
 #     N_RIBS,
 #     N_SPARS)
 
-SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
 
 # For rib's holes
 # Create circles in each of the stringer point with a radius equal to stringers height
@@ -856,19 +1177,19 @@ with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     file.write(CMD)
     file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
     # Save the file and close
-    # file.write("*writefile \"C:/Users/efilippo/Documents/"
-    #            "ASD_Lab_Parametric_Design_of_Wing_OOP_Init/HM_Files/wing.hm\" 1\n")
-    file.write(
-            "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-    )
+    file.write("*writefile \"C:/Users/efilippo/Documents/"
+               "ASD_Lab_Parametric_Design_of_Wing_OOP_Init/HM_Files/wing.hm\" 1\n")
+    # file.write(
+    #         "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+    #         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
+    # )
     file.write("return; # Stop script and return to application\n*quit 1;\n")
 file.close()
 
 # ################# Running the Command file: ##################
 
 # Location of .tcl script and run
-TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
+TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP_Init/"\
                     "Wing_Geometry_Generation.tcl"
 run_argument(TCL_SCRIPT_PATH)
 
