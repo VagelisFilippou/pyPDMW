@@ -3,7 +3,7 @@ import numpy as np
 
 class MultipleSurfacesThreeCurves:
 
-    def __init__(self, n_1, n_2, ids_1, ids_2, ids_3, surface_counter):
+    def __init__(self, n_1, n_2, ids_1, ids_2, ids_3, surface_counter, file):
 
         self.n_1 = n_1
         self.n_2 = n_2
@@ -16,7 +16,7 @@ class MultipleSurfacesThreeCurves:
 
         self.surface_counter = surface_counter
 
-        self.write_tcl()
+        self.write_tcl(file)
 
     def list_creation(self, i, j):
         my_list = list((self.ids_1[i, j],
@@ -24,22 +24,21 @@ class MultipleSurfacesThreeCurves:
                         self.ids_3[i, j]))
         return my_list
 
-    def write_tcl(self):
-        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
-            for i in range(0, self.n_1):
-                for j in range(0, self.n_2):
-                    my_list = self.list_creation(i, j)
-                    my_str = ' '.join(map(str, my_list))
-                    cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
-                    file.write(cmd)
-                    file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
-                    self.surface_counter += 1
-                    self.surfaces[i, j] = self.surface_counter
-        file.close()
+    def write_tcl(self, file):
+        for i in range(0, self.n_1):
+            for j in range(0, self.n_2):
+                my_list = self.list_creation(i, j)
+                my_str = ' '.join(map(str, my_list))
+                cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
+                file.write(cmd)
+                file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
+                self.surface_counter += 1
+                self.surfaces[i, j] = self.surface_counter
 
 
 class MultipleSurfacesFourCurves(MultipleSurfacesThreeCurves):
-    def __init__(self, n_1, n_2, ids_1, ids_2, ids_3, ids_4, surface_counter):
+    def __init__(self, n_1, n_2, ids_1, ids_2, ids_3, ids_4, surface_counter,
+                 file):
 
         self.n_1 = n_1
         self.n_2 = n_2
@@ -52,7 +51,7 @@ class MultipleSurfacesFourCurves(MultipleSurfacesThreeCurves):
         self.surfaces = np.zeros((self.n_1, self.n_2))
         self.surface_counter = surface_counter
 
-        self.write_tcl()
+        self.write_tcl(file)
 
     def list_creation(self, i, j):
         my_list = list((self.ids_1[i, j],
@@ -64,7 +63,7 @@ class MultipleSurfacesFourCurves(MultipleSurfacesThreeCurves):
 
 class SingleSurfacesFourCurves:
 
-    def __init__(self, n_1, ids_1, ids_2, ids_3, ids_4, surface_counter):
+    def __init__(self, n_1, ids_1, ids_2, ids_3, ids_4, surface_counter, file):
 
         self.n_1 = n_1
 
@@ -76,7 +75,7 @@ class SingleSurfacesFourCurves:
         self.surfaces = np.zeros((self.n_1, 1))
         self.surface_counter = surface_counter
 
-        self.write_tcl()
+        self.write_tcl(file)
 
     def list_creation(self, i):
         my_list = list((self.ids_1[i],
@@ -85,22 +84,20 @@ class SingleSurfacesFourCurves:
                         self.ids_4[i, 0]))
         return my_list
 
-    def write_tcl(self):
-        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
-            for i in range(0, self.n_1):
-                my_list = self.list_creation(i)
-                my_str = ' '.join(map(str, my_list))
-                cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
-                file.write(cmd)
-                file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
-                self.surface_counter += 1
-                self.surfaces[i, 0] = self.surface_counter
-        file.close()
+    def write_tcl(self, file):
+        for i in range(0, self.n_1):
+            my_list = self.list_creation(i)
+            my_str = ' '.join(map(str, my_list))
+            cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
+            file.write(cmd)
+            file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
+            self.surface_counter += 1
+            self.surfaces[i, 0] = self.surface_counter
 
 
 class SingleSurfacesThreeCurves(SingleSurfacesFourCurves):
 
-    def __init__(self, n_1, ids_1, ids_2, ids_3, surface_counter):
+    def __init__(self, n_1, ids_1, ids_2, ids_3, surface_counter, file):
 
         self.n_1 = n_1
 
@@ -112,7 +109,7 @@ class SingleSurfacesThreeCurves(SingleSurfacesFourCurves):
         self.components = np.zeros((self.n_1, 1))
         self.surface_counter = surface_counter
 
-        self.write_tcl()
+        self.write_tcl(file)
 
     def list_creation(self, i):
         my_list = list((self.ids_1[i],
