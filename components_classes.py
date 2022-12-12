@@ -23,10 +23,11 @@ class AssemblyClass:
 
 class ComponentClass:
 
-    def __init__(self, counter, name, surfaces, index):
+    def __init__(self, counter, name, surfaces, index, mesh_size):
         self.id = counter
         self.name = name
         self.surfaces = surfaces.flatten()
+        self.mesh_size = mesh_size
 
         self.write_tcl(index)
 

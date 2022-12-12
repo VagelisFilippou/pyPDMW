@@ -33,6 +33,7 @@ from find_inclination import RibsOrientation
 from spar_and_spar_caps_coords import SparsAndCapsCoords
 from store_spar_ids import SparsCapsIDs
 from connection_nodes import ConnectionNodes
+from mesh_parameters import Parameters as Mesh_Parameters
 import curve_classes
 import surface_classes
 import triple_surface_classes
@@ -72,10 +73,16 @@ parameters = Parameters(
     0.05    # Width of rib stiffeners
     )
 
+mesh_parameters = Mesh_Parameters(
+    0.2,    # Global element size
+    0       # Mesh refinement in the spanwise direction: 1 -> Yes, 0 -> No
+    )
+
 # ################# Derive the Geometry and its' parameters: ##################
 
 Derived_Geometry = DerivedGeometry(parameters)
 wing = RibsInclined(Derived_Geometry, parameters)
+
 # inclination = RibsOrientation(Derived_Geometry, parameters)
 
 N_RIBS = Derived_Geometry.N_ribs
@@ -83,6 +90,23 @@ N_SPARS = parameters.n_spars
 NUMBER_OF_NODES = Derived_Geometry.n
 N_STRINGERS = len(parameters.stringers_pos())
 N_STRINGERS_PER_SECT = parameters.n_stringers
+
+mesh_n = []
+mesh_n_minus_1 = []
+if mesh_parameters.mesh_refinement == 1:
+    taper_ratio = wing.chords[0, - 1] / wing.chords[0, 0]
+    mesh_1 = taper_ratio * mesh_parameters.global_size
+    mesh_refinement_step_n = (mesh_parameters.global_size - mesh_1) / N_RIBS
+    mesh_refinement_step_n_minus_1 = (mesh_parameters.global_size - mesh_1) / (N_RIBS - 1)
+    for i in range(0, N_RIBS):
+        mesh_n.append(mesh_parameters.global_size - mesh_refinement_step_n * i)
+    for i in range(0, N_RIBS - 1):
+        mesh_n_minus_1.append(mesh_parameters.global_size - mesh_refinement_step_n_minus_1 * i)
+else:
+    for i in range(0, N_RIBS):
+        mesh_n.append(mesh_parameters.global_size)
+    for i in range(0, N_RIBS - 1):
+        mesh_n_minus_1.append(mesh_parameters.global_size)
 
 # ## Spar and spar caps coordinates: ###
 
@@ -738,14 +762,14 @@ for i in range(0, N_RIBS):
             components_classes.ComponentClass(
                 COMPONENT_COUNTER, 'Rib_Stiffeners',
                 Surfaces_Rib_Stiffeners_1.surfaces[i, :],
-                i)
+                i, mesh_n[i])
             )
     elif i == N_RIBS - 1:
         Comp_Rib_Stiffeners.append(
             components_classes.ComponentClass(
                 COMPONENT_COUNTER, 'Rib_Stiffeners',
                 Surfaces_Rib_Stiffeners_2.surfaces[i - 1, :],
-                i)
+                i, mesh_n[i])
             )
     elif i < N_RIBS - 1:
         Comp_Rib_Stiffeners.append(
@@ -754,7 +778,7 @@ for i in range(0, N_RIBS):
                 np.concatenate((Surfaces_Rib_Stiffeners_1.surfaces[i, :],
                                 Surfaces_Rib_Stiffeners_2.surfaces[i - 1, :]),
                                axis=None),
-                i)
+                i, mesh_n[i])
             )
     COMPONENT_COUNTER += 1
 
@@ -765,14 +789,14 @@ for i in range(0, N_RIBS):
             components_classes.ComponentClass(
                 COMPONENT_COUNTER, 'Rib_Caps_Upper',
                 Surfaces_Rib_Caps_Upper_1.surfaces[i, :],
-                i)
+                i, mesh_n[i])
             )
     elif i == N_RIBS - 1:
         Comp_Rib_Caps_Upper.append(
             components_classes.ComponentClass(
                 COMPONENT_COUNTER, 'Rib_Caps_Upper',
                 Surfaces_Rib_Caps_Upper_2.surfaces[i - 1, :],
-                i)
+                i, mesh_n[i])
             )
     elif i < N_RIBS - 1:
         Comp_Rib_Caps_Upper.append(
@@ -781,7 +805,7 @@ for i in range(0, N_RIBS):
                 np.concatenate((Surfaces_Rib_Caps_Upper_1.surfaces[i, :],
                                 Surfaces_Rib_Caps_Upper_2.surfaces[i - 1, :]),
                                axis=None),
-                i)
+                i, mesh_n[i])
             )
     COMPONENT_COUNTER += 1
 
@@ -792,14 +816,14 @@ for i in range(0, N_RIBS):
             components_classes.ComponentClass(
                 COMPONENT_COUNTER, 'Rib_Caps_Lower',
                 Surfaces_Rib_Caps_Lower_1.surfaces[i, :],
-                i)
+                i, mesh_n[i])
             )
     elif i == N_RIBS - 1:
         Comp_Rib_Caps_Lower.append(
             components_classes.ComponentClass(
                 COMPONENT_COUNTER, 'Rib_Caps_Lower',
                 Surfaces_Rib_Caps_Lower_2.surfaces[i - 1, :],
-                i)
+                i, mesh_n[i])
             )
     elif i < N_RIBS - 1:
         Comp_Rib_Caps_Lower.append(
@@ -808,7 +832,7 @@ for i in range(0, N_RIBS):
                 np.concatenate((Surfaces_Rib_Caps_Lower_1.surfaces[i, :],
                                 Surfaces_Rib_Caps_Lower_2.surfaces[i - 1, :]),
                                axis=None),
-                i)
+                i, mesh_n[i])
             )
     COMPONENT_COUNTER += 1
 
@@ -825,7 +849,7 @@ for i in range(0, N_RIBS):
                 Surfaces_Right_Spar_Cap_Rib.surfaces[i, :],
                 ),
                 axis=None),
-            i)
+            i, mesh_n[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -840,7 +864,7 @@ for i in range(0, N_RIBS - 1):
                 Surfaces_Right_Side_Upper_Skin.surfaces[i, :],
                 ),
                 axis=None),
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -855,7 +879,7 @@ for i in range(0, N_RIBS - 1):
                 Surfaces_Right_Side_Lower_Skin.surfaces[i, :],
                 ),
                 axis=None),
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -866,7 +890,7 @@ for i in range(0, N_RIBS - 1):
             components_classes.ComponentClass(
                 COMPONENT_COUNTER, 'Spar_No_%.0f' % (j),
                 Surfaces_Spars.surfaces[i, j],
-                i)
+                i, mesh_n_minus_1[i])
         COMPONENT_COUNTER += 1
 
 Comp_Upper_Spar_Caps = {}
@@ -880,7 +904,7 @@ for i in range(0, N_RIBS - 1):
                     Surfaces_Upper_Right_Spar_Cap.surfaces[i, j]
                     ),
                     axis=None),
-                i)
+                i, mesh_n_minus_1[i])
         COMPONENT_COUNTER += 1
 
 Comp_Lower_Spar_Caps = {}
@@ -894,7 +918,7 @@ for i in range(0, N_RIBS - 1):
                     Surfaces_Lower_Right_Spar_Cap.surfaces[i, j]
                     ),
                     axis=None),
-                i)
+                i, mesh_n_minus_1[i])
         COMPONENT_COUNTER += 1
 
 Comp_Upper_Stringers_Z = []
@@ -903,7 +927,7 @@ for i in range(0, N_RIBS - 1):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Upper_Stringers_Z',
             Surfaces_Upper_Stringers.surfaces[i, :, :],
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -913,7 +937,7 @@ for i in range(0, N_RIBS - 1):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Upper_Stringers_X',
             Surfaces_Upper_Stringers_L.surfaces[i, :, :],
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -923,7 +947,7 @@ for i in range(0, N_RIBS - 1):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Lower_Stringers_Z',
             Surfaces_Lower_Stringers.surfaces[i, :, :],
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -933,7 +957,7 @@ for i in range(0, N_RIBS - 1):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Lower_Stringers_X',
             Surfaces_Lower_Stringers_L.surfaces[i, :, :],
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -943,7 +967,7 @@ for i in range(0, N_RIBS):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Front_Rib',
             Surfaces_Front_Rib.surfaces[i, :],
-            i)
+            i, mesh_n[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -953,7 +977,7 @@ for i in range(0, N_RIBS):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Rear_Rib',
             Surfaces_Rear_Rib.surfaces[i, :],
-            i)
+            i, mesh_n[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -963,7 +987,7 @@ for i in range(0, N_RIBS - 1):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Front_Upper_Skin',
             Surfaces_Front_Upper_Skin.surfaces[i, :],
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -973,7 +997,7 @@ for i in range(0, N_RIBS - 1):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Front_Lower_Skin',
             Surfaces_Front_Lower_Skin.surfaces[i, :],
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -983,7 +1007,7 @@ for i in range(0, N_RIBS - 1):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Rear_Upper_Skin',
             Surfaces_Rear_Upper_Skin.surfaces[i, :],
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -993,7 +1017,7 @@ for i in range(0, N_RIBS - 1):
         components_classes.ComponentClass(
             COMPONENT_COUNTER, 'Rear_Lower_Skin',
             Surfaces_Rear_Lower_Skin.surfaces[i, :],
-            i)
+            i, mesh_n_minus_1[i])
         )
     COMPONENT_COUNTER += 1
 
@@ -1087,8 +1111,6 @@ for i in range(0, N_SPARS):
     Assembly_Spars.append(components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Spars_No_%.0f' % (i), comp_list))
     ASSEMBLY_COUNTER += 1
-    # Mesh_Generation.GenerateMesh(np.concatenate(
-    #     [ComponentClass.surfaces for ComponentClass in comp_list]).ravel())
 
 Assembly_Spar_Caps = []
 for i in range(0, N_SPARS):
@@ -1100,71 +1122,20 @@ for i in range(0, N_SPARS):
         ASSEMBLY_COUNTER, 'Spar_Caps_No_%.0f' % (i), comp_list))
     ASSEMBLY_COUNTER += 1
 
-for i in range(0, N_SPARS):
-    comp_list = []
-    for j in range(0, N_RIBS - 1):
-        comp_list.append(Comp_Spars[j, i].surfaces)
-    comp_list = [float(i) for i in comp_list]
-    Mesh_Generation.GenerateMesh(comp_list)
-for i in range(0, N_SPARS):
-    comp_list = []
-    for j in range(0, N_RIBS - 1):
-        comp_list.append(Comp_Upper_Spar_Caps[j, i].surfaces)
-        comp_list.append(Comp_Lower_Spar_Caps[j, i].surfaces)
-    comp_list = np.concatenate(np.vstack(comp_list))
-    Mesh_Generation.GenerateMesh(comp_list)
 
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Main_Rib]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Lower_Skin]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Upper_Skin]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Lower_Stringers_X]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Lower_Stringers_Z]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Upper_Stringers_X]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Upper_Stringers_Z]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Rib_Caps_Upper]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Rib_Caps_Lower]).ravel())
-Mesh_Generation.GenerateMesh(np.concatenate(
-    [ComponentClass.surfaces for ComponentClass in Comp_Rib_Stiffeners]).ravel())
-# Mesh_Generation.GenerateMesh(np.concatenate(
-#     [ComponentClass.surfaces for ComponentClass in Comp_Front_Rib]).ravel())
-# Mesh_Generation.GenerateMesh(np.concatenate(
-#     [ComponentClass.surfaces for ComponentClass in Comp_Rear_Rib]).ravel())
-# Mesh_Generation.GenerateMesh(np.concatenate(
-#     [ComponentClass.surfaces for ComponentClass in Comp_Front_Upper_Skin]).ravel())
-# Mesh_Generation.GenerateMesh(np.concatenate(
-#     [ComponentClass.surfaces for ComponentClass in Comp_Front_Lower_Skin]).ravel())
-# Mesh_Generation.GenerateMesh(np.concatenate(
-#     [ComponentClass.surfaces for ComponentClass in Comp_Rear_Upper_Skin]).ravel())
-# Mesh_Generation.GenerateMesh(np.concatenate(
-#     [ComponentClass.surfaces for ComponentClass in Comp_Rear_Lower_Skin]).ravel())
+if mesh_parameters.mesh_refinement == 1:
+    list_of_components = (
+        Comp_Main_Rib + Comp_Lower_Skin + Comp_Upper_Skin + Comp_Lower_Stringers_X +
+        Comp_Lower_Stringers_Z + Comp_Upper_Stringers_X + Comp_Upper_Stringers_Z +
+        list(Comp_Spars.values()) + list(Comp_Upper_Spar_Caps.values()) +
+        list(Comp_Lower_Spar_Caps.values()) + Comp_Rib_Stiffeners +
+        Comp_Rib_Caps_Upper + Comp_Rib_Caps_Lower
+        )
+    Mesh_Generation.GenerateMesh(list_of_components)
+else:
+    list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
+    Mesh_Generation.GenerateGlobalMesh(list_of_surfaces)
 
-# surface_classes.CutRibHoles(
-#     Surfaces_Main_Rib.surfaces,
-#     Curve_Rib_Holes_Upper.curves,
-#     N_RIBS,
-#     N_SPARS)
-
-# surface_classes.CutRibHoles(
-#     Surfaces_Main_Rib.surfaces,
-#     Curve_Rib_Holes_Lower.curves,
-#     N_RIBS,
-#     N_SPARS)
-
-
-# For rib's holes
-# Create circles in each of the stringer point with a radius equal to stringers height
-# *createlist nodes 1 69 49 29
-# *createvector 1 0 1 0
-# *createcirclefromcenterradius 1 1 0.08 360 0
 
 with open('Wing_Geometry_Generation.tcl', 'a+') as file:
     # Clear all nodes
@@ -1191,7 +1162,7 @@ file.close()
 # Location of .tcl script and run
 TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP_Init/"\
                     "Wing_Geometry_Generation.tcl"
-run_argument(TCL_SCRIPT_PATH)
+# run_argument(TCL_SCRIPT_PATH)
 
 # End time counter
 toc = time.perf_counter()
