@@ -11,27 +11,52 @@ class MeshProperties:
 
 
 class GenerateMesh:
-    def __init__(self, surfaces):
+    def __init__(self, list_of_components, file):
         self.mesh_properties = MeshProperties()
-        self.write_tcl(surfaces)
+        self.list_of_components = list_of_components
+        self.iterate_for_each_component(file)
 
-    def write_tcl(self, surfaces):
+    def iterate_for_each_component(self, file):
+        for i in range(0, len(self.list_of_components)):
+            self.write_tcl(self.list_of_components[i], file)
+
+    def write_tcl(self, component, file):
+        str_ids = ' '.join(map(str, component.surfaces))
+        file.write(
+            '*setedgedensitylinkwithaspectratio -1\n'
+            '*elementorder 1\n'
+            '*startnotehistorystate {Automesh surfaces}\n'
+            '*createmark surfaces 1 ' + str_ids +
+            '\n*interactiveremeshsurf 1 %.3f 1 1 2 1 1\n' %
+            (component.mesh_size))
+        for i in range(0, len(component.surfaces)):
+            cmd = MeshPropertiesAssignment(i, self.mesh_properties)
+            file.write(cmd)
+        file.write(
+            '*storemeshtodatabase 1\n'
+            '*ameshclearsurface\n'
+            '*endnotehistorystate {Automesh surfaces}\n')
+
+class GenerateGlobalMesh:
+    def __init__(self, surfaces, file):
+        self.mesh_properties = MeshProperties()
+        self.write_tcl(surfaces, file)
+
+    def write_tcl(self, surfaces, file):
         str_ids = ' '.join(map(str, surfaces))
-        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
-            file.write(
-                '*setedgedensitylinkwithaspectratio -1\n'
-                '*elementorder 1\n'
-                '*startnotehistorystate {Automesh surfaces}\n'
-                '*createmark surfaces 1 ' + str_ids +
-                '\n*interactiveremeshsurf 1 0.1 1 1 2 1 1\n')
-            for i in range(0, len(surfaces)):
-                cmd = MeshPropertiesAssignment(i, self.mesh_properties)
-                file.write(cmd)
-            file.write(
-                '*storemeshtodatabase 1\n'
-                '*ameshclearsurface\n'
-                '*endnotehistorystate {Automesh surfaces}\n')
-
+        file.write(
+            '*setedgedensitylinkwithaspectratio -1\n'
+            '*elementorder 1\n'
+            '*startnotehistorystate {Automesh surfaces}\n'
+            '*createmark surfaces 1 ' + str_ids +
+            '\n*interactiveremeshsurf 1 0.2 1 1 2 1 1\n')
+        for i in range(0, len(surfaces)):
+            cmd = MeshPropertiesAssignment(i, self.mesh_properties)
+            file.write(cmd)
+        file.write(
+            '*storemeshtodatabase 1\n'
+            '*ameshclearsurface\n'
+            '*endnotehistorystate {Automesh surfaces}\n')
 
 def MeshPropertiesAssignment(index, mesh_properties):
 
