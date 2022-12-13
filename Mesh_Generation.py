@@ -37,6 +37,7 @@ class GenerateMesh:
             '*ameshclearsurface\n'
             '*endnotehistorystate {Automesh surfaces}\n')
 
+
 class GenerateGlobalMesh:
     def __init__(self, surfaces, file):
         self.mesh_properties = MeshProperties()
@@ -57,6 +58,17 @@ class GenerateGlobalMesh:
             '*storemeshtodatabase 1\n'
             '*ameshclearsurface\n'
             '*endnotehistorystate {Automesh surfaces}\n')
+
+
+class GenerateWithAutomesh:
+    def __init__(self, surfaces, file):
+        self.write_tcl(surfaces, file)
+
+    def write_tcl(self, surfaces, file):
+        str_ids = ' '.join(map(str, surfaces))
+        file.write('*createmark surfaces 1 ' + str_ids)
+        file.write('\n*defaultremeshsurf 1 0.1 1 1 2 1 1 1 1 0 0 0 0\n')
+
 
 def MeshPropertiesAssignment(index, mesh_properties):
 

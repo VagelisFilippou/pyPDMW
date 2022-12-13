@@ -58,9 +58,9 @@ parameters = Parameters(
     29.38,  # Semi-span
     0.37,   # Yehudi break normalized
     3,      # Number of spars
-    3,      # Number of central ribs
-    5,     # Number of ribs from fuselage till yehudi break
-    10,     # Number of ribs from yehudi break till semi-span
+    5,      # Number of central ribs
+    10,     # Number of ribs from fuselage till yehudi break
+    30,     # Number of ribs from yehudi break till semi-span
     0.15,   # front spar position
     0.75,   # rear spar position
     0.1,    # fuselage section normalized
@@ -811,6 +811,16 @@ Surfaces_Rib_Stiffeners_2 =\
 
 SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
 
+# Clear all nodes
+file.write("*nodecleartempmark\n")
+
+# Clean-up the geometry
+my_list = list(range(1, SURFACE_COUNTER + 1))
+STR_IDS = ' '.join(map(str, my_list))
+CMD = "*createmark surfaces 1 " + STR_IDS
+file.write(CMD)
+file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
+
 Comp_Rib_Stiffeners = []
 for i in range(0, N_RIBS):
     if i == 0:
@@ -1191,36 +1201,29 @@ for i in range(0, N_SPARS):
         ASSEMBLY_COUNTER, 'Spar_Caps_No_%.0f' % (i), comp_list, file))
     ASSEMBLY_COUNTER += 1
 
-if mesh_parameters.mesh_refinement == 1:
-    list_of_components = (
-        Comp_Main_Rib + Comp_Lower_Skin + Comp_Upper_Skin + Comp_Lower_Stringers_X +
-        Comp_Lower_Stringers_Z + Comp_Upper_Stringers_X + Comp_Upper_Stringers_Z +
-        list(Comp_Spars.values()) + list(Comp_Upper_Spar_Caps.values()) +
-        list(Comp_Lower_Spar_Caps.values()) + Comp_Rib_Stiffeners +
-        Comp_Rib_Caps_Upper + Comp_Rib_Caps_Lower
-        )
-    Mesh_Generation.GenerateMesh(list_of_components, file)
-else:
-    list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
-    Mesh_Generation.GenerateGlobalMesh(list_of_surfaces, file)
+# if mesh_parameters.mesh_refinement == 1:
+#     list_of_components = (
+#         Comp_Main_Rib + Comp_Lower_Skin + Comp_Upper_Skin + Comp_Lower_Stringers_X +
+#         Comp_Lower_Stringers_Z + Comp_Upper_Stringers_X + Comp_Upper_Stringers_Z +
+#         list(Comp_Spars.values()) + list(Comp_Upper_Spar_Caps.values()) +
+#         list(Comp_Lower_Spar_Caps.values()) + Comp_Rib_Stiffeners +
+#         Comp_Rib_Caps_Upper + Comp_Rib_Caps_Lower
+#         )
+#     Mesh_Generation.GenerateMesh(list_of_components, file)
+# else:
+#     list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
+#     Mesh_Generation.GenerateGlobalMesh(list_of_surfaces, file)
 
+list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
+Mesh_Generation.GenerateWithAutomesh(list_of_surfaces, file)
 
-# Clear all nodes
-file.write("*nodecleartempmark\n")
-
-# Clean-up the geometry
-my_list = list(range(1, SURFACE_COUNTER + 1))
-STR_IDS = ' '.join(map(str, my_list))
-CMD = "*createmark surfaces 1 " + STR_IDS
-file.write(CMD)
-file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
 # Save the file and close
-file.write("*writefile \"C:/Users/efilippo/Documents/"
-           "ASD_Lab_Parametric_Design_of_Wing_OOP_Init/HM_Files/wing.hm\" 1\n")
-# file.write(
-#         "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-#         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-# )
+# file.write("*writefile \"C:/Users/efilippo/Documents/"
+#            "ASD_Lab_Parametric_Design_of_Wing_OOP_Init/HM_Files/wing.hm\" 1\n")
+file.write(
+        "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+        "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
+)
 file.write("return; # Stop script and return to application\n*quit 1;\n")
 
 # Close the file
@@ -1229,7 +1232,7 @@ file.close()
 # ################# Running the Command file: ##################
 
 # Location of .tcl script and run
-TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP_Init/"\
+TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
                     "Wing_Geometry_Generation.tcl"
 run_argument(TCL_SCRIPT_PATH)
 
