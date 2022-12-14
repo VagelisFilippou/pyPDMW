@@ -45,35 +45,7 @@ class MultipleSurfacesThreeCurves:
                         file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
                         self.surface_counter += 1
                         self.surfaces[i, j] = self.surface_counter
-                self.component_counter += 1
-                self.components[i, 0] = self.component_counter
-                file.write('*createentity comps name="'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write(
-                    '*startnotehistorystate {Moved surfaces into component "'
-                    + self.components_name + '_%.0f"}\n' % (i + 1))
-                file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0], self.surfaces[i, return_first_zero(self.surfaces[i, :]) - 1]))
-                file.write('*movemark surfaces 1 "'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write('*endnotehistorystate {Moved surfaces into component "'
-                           + self.components_name + '_%.0f"}\n'
-                           % (i + 1))
-            file.write(
-                '*createentity assems name="'
-                + self.components_name + '"\n')
-            file.write(
-                '*startnotehistorystate {Modified Components of assembly}\n')
-            file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assembly_counter,
-                          self.components[0, 0],
-                          self.components[-1, 0]))
-            file.write(
-                '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assembly_counter += 1
 
 class MultipleSurfaces:
     def __init__(self, n_1, n_2, ids_1, ids_2, ids_3, ids_4,
@@ -114,35 +86,8 @@ class MultipleSurfaces:
                     file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
                     self.surface_counter += 1
                     self.surfaces[i, j] = self.surface_counter
-                self.component_counter += 1
-                self.components[i, 0] = self.component_counter
-                file.write('*createentity comps name="'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write(
-                    '*startnotehistorystate {Moved surfaces into component "'
-                    + self.components_name + '_%.0f"}\n' % (i + 1))
-                file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0], self.surfaces[i, -1]))
-                file.write('*movemark surfaces 1 "'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write('*endnotehistorystate {Moved surfaces into component "'
-                           + self.components_name + '_%.0f"}\n'
-                           % (i + 1))
-            file.write(
-                '*createentity assems name="'
-                + self.components_name + '"\n')
-            file.write(
-                '*startnotehistorystate {Modified Components of assembly}\n')
-            file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assembly_counter,
-                          self.components[0, 0],
-                          self.components[-1, 0]))
-            file.write(
-                '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assembly_counter += 1
+
 
 class SingleSurfacesFourCurves:
 
@@ -182,35 +127,7 @@ class SingleSurfacesFourCurves:
                 file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
                 self.surface_counter += 1
                 self.surfaces[i, 0] = self.surface_counter
-                self.component_counter += 1
-                self.components[i, 0] = self.component_counter
-                file.write('*createentity comps name="'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write(
-                    '*startnotehistorystate {Moved surfaces into component "'
-                    + self.components_name + '_%.0f"}\n' % (i + 1))
-                file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0], self.surfaces[i, -1]))
-                file.write('*movemark surfaces 1 "'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write('*endnotehistorystate {Moved surfaces into component "'
-                           + self.components_name + '_%.0f"}\n'
-                           % (i + 1))
-            file.write(
-                '*createentity assems name="'
-                + self.components_name + '"\n')
-            file.write(
-                '*startnotehistorystate {Modified Components of assembly}\n')
-            file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assembly_counter,
-                          self.components[0, 0],
-                          self.components[-1, 0]))
-            file.write(
-                '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assembly_counter += 1
 
 
 class MainRibSurfaces(MultipleSurfaces):
@@ -268,33 +185,33 @@ class RightSideOfMainRibSurfaces(MultipleSurfaces):
 
 
 class LeftSideOfSkins(MultipleSurfaces):
-    def list_creation(self, i, j):
-        my_list = list((self.ids_1[i, j, 0],
-                        self.ids_2[i + 1, j, 0],
-                        self.ids_3[i, j],
-                        self.ids_4[i, j, 0]))
-        return my_list
     # def list_creation(self, i, j):
-    #     # print(return_zeros(self.ids_1[i, :]))
-    #     if return_zeros(self.ids_1[i, :]) == return_zeros(self.ids_1[i + 1, :]):
-    #         my_list = list((self.ids_1[i, 3],
-    #                         self.ids_2[i + 1, 3],
-    #                         self.ids_3[i, j],
-    #                         self.ids_4[i, j, 0]))
-    #     else:
-    #         # space = int(abs(return_zeros(self.ids_1[i, :]) - return_zeros(self.ids_1[i - 1, :])))
-    #         my_list = list((self.ids_1[i, 3],
-    #                         self.ids_1[i, 3 + 1],
-    #                         self.ids_2[i + 1, 3],
-    #                         self.ids_3[i, j],
-    #                         self.ids_4[i, j, 0]))
+    #     my_list = list((self.ids_1[i, j, 0],
+    #                     self.ids_2[i + 1, j, 0],
+    #                     self.ids_3[i, j],
+    #                     self.ids_4[i, j, 0]))
+    #     return my_list
+    def list_creation(self, i, j):
+        # print(return_zeros(self.ids_1[i, :]))
+        if return_zeros(self.ids_1[i, :]) == return_zeros(self.ids_1[i + 1, :]):
+            my_list = list((self.ids_1[i, 3],
+                            self.ids_2[i + 1, 3],
+                            self.ids_3[i, j],
+                            self.ids_4[i, j, 0]))
+        else:
+            # space = int(abs(return_zeros(self.ids_1[i, :]) - return_zeros(self.ids_1[i - 1, :])))
+            my_list = list((self.ids_1[i, 3],
+                            self.ids_1[i, 3 + 1],
+                            self.ids_2[i + 1, 3],
+                            self.ids_3[i, j],
+                            self.ids_4[i, j, 0]))
             # for k in range(0, space):
             #     my_list.append(self.ids_1[i, 3 + i])
         # my_list = list((self.ids_1[i, 3],
         #                 self.ids_2[i + 1, 3],
         #                 self.ids_3[i, j],
         #                 self.ids_4[i, j, 0]))
-        # return my_list
+        return my_list
 
 
 
@@ -403,7 +320,28 @@ class CutRibHoles:
                                '*deletemark surfaces 1\n')
         file.close()
 
-class RibCaps(MultipleSurfacesThreeCurves):
+
+class RibCaps:
+
+    def __init__(self, n_1, n_2, ids_1, ids_2, ids_3,
+                 surface_counter, component_counter, assembly_counter,
+                 components_name, zeros):
+
+        self.n_1 = n_1
+        self.n_2 = n_2
+
+        self.ids_1 = ids_1
+        self.ids_2 = ids_2
+        self.ids_3 = ids_3
+
+        self.surfaces = np.zeros((self.n_1, self.n_2))
+        self.components = np.zeros((self.n_1, 1))
+        self.surface_counter = surface_counter
+        self.component_counter = component_counter
+        self.assembly_counter = assembly_counter
+        self.components_name = components_name
+        self.write_tcl(zeros)
+
     def list_creation(self, i, j):
         my_list = list((self.ids_1[i, j],
                         self.ids_2[i, j + 1],
@@ -415,6 +353,37 @@ class RibCaps(MultipleSurfacesThreeCurves):
         if self.ids_1[i, j] == 0 or self.ids_2[i, j + 1] == 0:
             check = 1
         return check
+
+    def write_tcl(self, zeros):
+        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+            for i in range(0, self.n_1):
+                for j in range(0, self.n_2 - int(zeros[i])):
+                    if self.check_for_zeros(i, j) != 1:
+                        my_list = self.list_creation(i, j)
+                        my_str = ' '.join(map(str, my_list))
+                        cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
+                        file.write(cmd)
+                        file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
+                        self.surface_counter += 1
+                        self.surfaces[i, j] = self.surface_counter
+        file.close()
+
+
+class RibCaps2(RibCaps):
+
+    def write_tcl(self, zeros):
+        with open('Wing_Geometry_Generation.tcl', 'a+') as file:
+            for i in range(0, self.n_1):
+                for j in range(0, self.n_2 - int(zeros[i + 1])):
+                    if self.check_for_zeros(i, j) != 1:
+                        my_list = self.list_creation(i, j)
+                        my_str = ' '.join(map(str, my_list))
+                        cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
+                        file.write(cmd)
+                        file.write("\n*surfacesplineonlinesloop 1 1 0 65\n")
+                        self.surface_counter += 1
+                        self.surfaces[i, j] = self.surface_counter
+        file.close()
 
 def return_zers(vec, id_from_zero):
     n_1 = len(vec)

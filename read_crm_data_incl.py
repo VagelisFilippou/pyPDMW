@@ -337,14 +337,14 @@ class RibsInclined:
             request = numpy.transpose(numpy.array([x_new, y_new]))
 
             # Find the desired data for the upper points with griddata function
-            points_upper = numpy.transpose(numpy.array([x_upper, y_upper]))
-            values_upper = numpy.transpose(z_upper)
-            Z_upper = interpolate.griddata(points_upper, values_upper, request)
+            self.points_upper = numpy.transpose(numpy.array([x_upper, y_upper]))
+            self.values_upper = numpy.transpose(z_upper)
+            Z_upper = interpolate.griddata(self.points_upper, self.values_upper, request)
 
             # Find the desired data for the lower points with griddata function
-            points_lower = numpy.transpose(numpy.array([x_lower, y_lower]))
-            values_lower = numpy.transpose(z_lower)
-            Z_lower = interpolate.griddata(points_lower, values_lower, request)
+            self.points_lower = numpy.transpose(numpy.array([x_lower, y_lower]))
+            self.values_lower = numpy.transpose(z_lower)
+            Z_lower = interpolate.griddata(self.points_lower, self.values_lower, request)
 
             # Now reshape to an array form
             X = x_new.reshape(len(self.Y_vector), n_points)

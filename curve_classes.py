@@ -14,6 +14,9 @@ class UpperRibCurve:
         self.curves, self.curve_counter = self.write_tcl(n_stringers)
         self.sections_id = RibCurveIDs(self.curves, self.n_1, self.n_2,
                                        n_stringers_per_sect)
+        self.zeros = np.zeros((self.n_1))
+        for i in range(0, self.n_1):
+            self.zeros[i] = return_zeros(self.curves[i, :])
 
     def list_creation(self, i, j):
         my_list = list(range(self.ids[i, j + 1], self.ids[i, j] + 1))
@@ -237,3 +240,12 @@ class CirclesForStringers:
     def reshape_curves(self, n_spars, n_stringers_per_sect):
         self.curves = self.curves[..., np.newaxis]
         self.curves.shape = (self.n_1, n_spars - 1, n_stringers_per_sect)
+
+
+def return_zeros(vec):
+    n_1 = len(vec)
+    id_1 = 0
+    for i in range(0, n_1):
+        if vec[i] == 0:
+            id_1 += 1
+    return id_1

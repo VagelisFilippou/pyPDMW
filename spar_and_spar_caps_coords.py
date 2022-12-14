@@ -45,6 +45,8 @@ class SparsAndCapsCoords:
                                                derived_geometry.N_ribs))
         stringers_nodes_y_incl_par = np.zeros((3, n_stringers_total,
                                                derived_geometry.N_ribs))
+        self.stringers_nodes_x_inters = {}
+        self.stringers_nodes_y_inters = {}
         # Translate the spars
         translation(parameters.n_spars, derived_geometry, wing, fuselage_rib,
                     spars_position, spars_nodes_x, spars_nodes_y)
@@ -89,6 +91,7 @@ class SparsAndCapsCoords:
         spar_caps_yl = spars_nodes_y
         spar_caps_yr = spars_nodes_y
 
+
         # Calculate the intersection with the ribs that define their coordinates
         for i in range(0, parameters.n_spars):
             for j in range(0, derived_geometry.N_ribs):
@@ -117,8 +120,9 @@ class SparsAndCapsCoords:
                         spar_caps_yl_incl[k, i, j] = y_int_sc_l[0]
                         spar_caps_xr_incl[k, i, j] = x_int_sc_r[0]
                         spar_caps_yr_incl[k, i, j] = y_int_sc_r[0]
-
+        keys = []
         for i in range(0, n_stringers_total):
+            sign = 0
             for j in range(0, derived_geometry.N_ribs):
                 for k in range(0, 3):
                     x_int_str, y_int_str =\
@@ -144,9 +148,18 @@ class SparsAndCapsCoords:
                     else:
                         stringers_nodes_x_incl_par[k, i, j] = x_int_str_par[0]
                         stringers_nodes_y_incl_par[k, i, j] = y_int_str_par[0]
-                    if stringers_nodes_x_incl_par[k, i, j] < spar_caps_xr_incl[0, 0, j]:
-                        stringers_nodes_x_incl_par[k, i, j] = np.nan
-                        stringers_nodes_y_incl_par[k, i, j] = np.nan
+                if stringers_nodes_x_incl_par[0, i, j] <\
+                        spar_caps_xr_incl[0, 0, j] + parameters.stringers_tolerance and sign == 0:
+                    sign = 1
+                    # Caution!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    # This is wrong! shoud be equal to the intersection with right spar cap
+                    self.stringers_nodes_x_inters[i, j] = stringers_nodes_x_incl_par[0, i, j]
+                    self.stringers_nodes_y_inters[i, j] = stringers_nodes_y_incl_par[0, i, j]
+
+                if stringers_nodes_x_incl_par[0, i, j] <\
+                        spar_caps_xr_incl[0, 0, j] + parameters.stringers_tolerance:
+                    stringers_nodes_x_incl_par[:, i, j] = np.nan
+                    stringers_nodes_y_incl_par[:, i, j] = np.nan
 
         self.Spars_nodes_X = spars_nodes_x_incl
         self.Spars_nodes_Y = spars_nodes_y_incl
@@ -177,6 +190,15 @@ def translation(n_nodes, derived_geometry, wing, fuselage_rib,
                     nodes_x[k, i, j] =\
                         position[i] * wing.chords[k, fuselage_rib] +\
                         derived_geometry.Origin[k, fuselage_rib, 0]
+    # This code section modifies the spars after fuselage in order to be straight
+    # for j in range(0, derived_geometry.N_ribs):
+    #     for k in range(0, 3):
+    #         for i in range(0, n_nodes):
+    #             nodes_x[k, i, j] =\
+    #                 np.interp(nodes_y[k, i, j],
+    #                           [nodes_y[0, 0, derived_geometry.Rib_Sections_ID[0] - 1], nodes_y[0, 0, -1]],
+    #                           [nodes_x[k, i, derived_geometry.Rib_Sections_ID[0] - 1],
+    #                            nodes_x[k, i, -1]])
 
     nodes_x[2, :, 0: fuselage_rib + 1] = nodes_x[0, :, 0: fuselage_rib + 1]
     nodes_x[1, :, 0: fuselage_rib] = nodes_x[0, :, 0: fuselage_rib]

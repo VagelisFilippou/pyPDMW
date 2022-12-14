@@ -26,6 +26,7 @@ Advices:
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import interpolate
 from wing_parameters import Parameters
 from derive_geometry import DerivedGeometry
 from read_crm_data_incl import RibsInclined
@@ -36,6 +37,10 @@ from connection_nodes import ConnectionNodes
 import curve_classes
 import surface_classes
 import triple_surface_classes
+from mesh_parameters import Parameters as Mesh_Parameters
+import components_classes
+import Mesh_Generation
+
 from run_arg import run_argument
 from delete_files import delete_files
 
@@ -55,9 +60,9 @@ parameters = Parameters(
     29.38,  # Semi-span
     0.37,   # Yehudi break normalized
     2,      # Number of spars
-    5,      # Number of central ribs
-    10,      # Number of ribs from fuselage till yehudi break
-    30,     # Number of ribs from yehudi break till semi-span
+    3,      # Number of central ribs
+    7,      # Number of ribs from fuselage till yehudi break
+    9,     # Number of ribs from yehudi break till semi-span
     0.15,    # front spar position
     0.75,    # rear spar position
     0.1,    # fuselage section normalized
@@ -65,8 +70,13 @@ parameters = Parameters(
     0.3,    # Root right spar cap width
     0.1,    # Tip left spar cap width
     0.1,    # Tip right spar cap width
-    12,      # Number of stringers per spar section
+    8,      # Number of stringers per spar section
     0.03    # Stringers tolerance from spar caps
+    )
+
+mesh_parameters = Mesh_Parameters(
+    0.2,    # Global element size
+    0       # Mesh refinement in the spanwise direction: 1 -> Yes, 0 -> No
     )
 
 # ################# Derive the Geometry and its' parameters: ##################
@@ -81,6 +91,23 @@ NUMBER_OF_NODES = Derived_Geometry.n
 N_STRINGERS = len(parameters.stringers_pos())
 N_STRINGERS_PER_SECT = parameters.n_stringers
 
+mesh_n = []
+mesh_n_minus_1 = []
+if mesh_parameters.mesh_refinement == 1:
+    taper_ratio = wing.chords[0, - 1] / wing.chords[0, 0]
+    mesh_1 = taper_ratio * mesh_parameters.global_size
+    mesh_refinement_step_n = (mesh_parameters.global_size - mesh_1) / N_RIBS
+    mesh_refinement_step_n_minus_1 = (mesh_parameters.global_size - mesh_1) / (N_RIBS - 1)
+    for i in range(0, N_RIBS):
+        mesh_n.append(mesh_parameters.global_size - mesh_refinement_step_n * i)
+    for i in range(0, N_RIBS - 1):
+        mesh_n_minus_1.append(mesh_parameters.global_size - mesh_refinement_step_n_minus_1 * i)
+else:
+    for i in range(0, N_RIBS):
+        mesh_n.append(mesh_parameters.global_size)
+    for i in range(0, N_RIBS - 1):
+        mesh_n_minus_1.append(mesh_parameters.global_size)
+
 # ## Spar and spar caps coordinates: ###
 
 Spars_And_Spar_Caps = SparsAndCapsCoords(Derived_Geometry, wing, parameters)
@@ -93,6 +120,23 @@ Spar_Caps_YL = Spars_And_Spar_Caps.Spar_Caps_YL
 Spar_Caps_YR = Spars_And_Spar_Caps.Spar_Caps_YR
 Stringers_X = Spars_And_Spar_Caps.stringers_nodes_x_par
 Stringers_Y = Spars_And_Spar_Caps.stringers_nodes_y_par
+
+Stringers_X_Inters_list = list(dict.values(Spars_And_Spar_Caps.stringers_nodes_x_inters))
+Stringers_Y_Inters_list = list(dict.values(Spars_And_Spar_Caps.stringers_nodes_y_inters))
+Stringers_Inters = np.transpose(np.array([Stringers_X_Inters_list, Stringers_Y_Inters_list]))
+keys = list(dict.keys(Spars_And_Spar_Caps.stringers_nodes_x_inters))
+Stringers_Z_Inters_Upper_list = interpolate.griddata(wing.points_upper, wing.values_upper, Stringers_Inters)
+Stringers_Z_Inters_Lower_list = interpolate.griddata(wing.points_lower, wing.values_lower, Stringers_Inters)
+
+Stringers_Z_Inters_Upper = {}
+Stringers_Z_Inters_Lower = {}
+Stringers_X_Inters = {}
+Stringers_Y_Inters = {}
+for i in range(0, len(keys)):
+    Stringers_Z_Inters_Upper[keys[i]] = Stringers_Z_Inters_Upper_list[i, ]
+    Stringers_Z_Inters_Lower[keys[i]] = Stringers_Z_Inters_Lower_list[i, ]
+    Stringers_X_Inters[keys[i]] = Stringers_X_Inters_list[i]
+    Stringers_Y_Inters[keys[i]] = Stringers_Y_Inters_list[i]
 
 # ## Put the spars' coordinates in the xyz arrays and store their index: ###
 
@@ -142,7 +186,7 @@ plt.show()
 NODE_COUNTER = 0
 CURVE_COUNTER = 0
 SURFACE_COUNTER = 0
-COMPONENT_COUNTER = 1  # =1 because of the initial component
+COMPONENT_COUNTER = 2  # =1 because of the initial component
 ASSEMBLY_COUNTER = 1
 # Open a .tcl file and write the commands there
 with open('Wing_Geometry_Generation.tcl', 'w') as file:
@@ -205,7 +249,60 @@ with open('Wing_Geometry_Generation.tcl', 'w') as file:
                               X_Y_Z[2, Stringer_ID_Lower[0, i, j] - 1] + H))
                 NODE_COUNTER += 1
                 Stringer_ID_Lower_Extend_L[i, j] = NODE_COUNTER
+
 file.close()
+
+file = open('Wing_Geometry_Generation.tcl', 'a+')
+
+Stringer_ID_Upper_Runout = {}
+Stringer_ID_Lower_Runout = {}
+Stringer_ID_Upper_Runout_Extend = {}
+Stringer_ID_Lower_Runout_Extend = {}
+Stringer_ID_Upper_Runout_Extend_L = {}
+Stringer_ID_Lower_Runout_Extend_L = {}
+for i in range(len(keys)):
+    file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+               % (Stringers_X_Inters[keys[i]],
+                  Stringers_Y_Inters[keys[i]],
+                  Stringers_Z_Inters_Upper[keys[i]]))
+    NODE_COUNTER += 1
+    Stringer_ID_Upper_Runout[keys[i]] = NODE_COUNTER
+
+    file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+               % (Stringers_X_Inters[keys[i]],
+                  Stringers_Y_Inters[keys[i]],
+                  Stringers_Z_Inters_Upper[keys[i]] - H))
+    NODE_COUNTER += 1
+    Stringer_ID_Upper_Runout_Extend[keys[i]] = NODE_COUNTER
+
+    file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+               % (Stringers_X_Inters[keys[i]] + L,
+                  Stringers_Y_Inters[keys[i]],
+                  Stringers_Z_Inters_Upper[keys[i]] - H))
+    NODE_COUNTER += 1
+    Stringer_ID_Upper_Runout_Extend_L[keys[i]] = NODE_COUNTER
+
+    file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+               % (Stringers_X_Inters[keys[i]],
+                  Stringers_Y_Inters[keys[i]],
+                  Stringers_Z_Inters_Lower[keys[i]]))
+    NODE_COUNTER += 1
+    Stringer_ID_Lower_Runout[keys[i]] = NODE_COUNTER
+
+    file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+               % (Stringers_X_Inters[keys[i]],
+                  Stringers_Y_Inters[keys[i]],
+                  Stringers_Z_Inters_Lower[keys[i]] + H))
+    NODE_COUNTER += 1
+    Stringer_ID_Lower_Runout_Extend[keys[i]] = NODE_COUNTER
+
+    file.write('*createnode %.7f %.7f %.7f 0 0 0\n'
+               % (Stringers_X_Inters[keys[i]] + L,
+                  Stringers_Y_Inters[keys[i]],
+                  Stringers_Z_Inters_Lower[keys[i]] + H))
+    NODE_COUNTER += 1
+    Stringer_ID_Lower_Runout_Extend_L[keys[i]] = NODE_COUNTER
+
 
 Curve_Upper_Rib = curve_classes.UpperRibCurve(N_RIBS,
                                               N_SPARS,
@@ -613,8 +710,8 @@ Surfaces_Left_Side_Upper_Skin =\
     surface_classes.LeftSideOfSkins(
         N_RIBS - 1,
         N_SPARS - 1,
-        Curve_Upper_Rib.sections_id.main_skin,
-        Curve_Upper_Rib.sections_id.main_skin,
+        Curve_Upper_Rib.curves,
+        Curve_Upper_Rib.curves,
         Curve_Upper_Right_Spar_Cap.curves,
         Curve_Upper_Stringers.curves,
         Surfaces_Right_Side_Main_Rib.surface_counter,
@@ -627,8 +724,8 @@ Surfaces_Left_Side_Lower_Skin =\
     surface_classes.LeftSideOfSkins(
         N_RIBS - 1,
         N_SPARS - 1,
-        Curve_Lower_Rib.sections_id.main_skin,
-        Curve_Lower_Rib.sections_id.main_skin,
+        Curve_Lower_Rib.curves,
+        Curve_Lower_Rib.curves,
         Curve_Lower_Right_Spar_Cap.curves,
         Curve_Lower_Stringers.curves,
         Surfaces_Left_Side_Upper_Skin.surface_counter,
@@ -756,53 +853,58 @@ Surfaces_Lower_Stringers_L =\
         Surfaces_Lower_Stringers.assembly_counter,
         'Lower_Stringers_L')
 
-# Surfaces_Rib_Caps_Upper_1 =\
-#     surface_classes.RibCaps(
-#         N_RIBS - 1,
-#         shape_of_array[2] - 3,
-#         Curve_Rib_Stiffener_Y_Upper_1.curves[:, 1:-1],
-#         Curve_Rib_Stiffener_Y_Upper_1.curves[:, 1:-1],
-#         Curve_Upper_Rib.curves[:-1, 1:-1],
-#         Surfaces_Lower_Stringers_L.surface_counter,
-#         Surfaces_Lower_Stringers_L.component_counter,
-#         Surfaces_Lower_Stringers_L.assembly_counter,
-#         'Rib_Caps_Upper_1')
+Surfaces_Rib_Caps_Upper_1 =\
+    surface_classes.RibCaps(
+        N_RIBS - 1,
+        shape_of_array[2] - 3,
+        Curve_Rib_Stiffener_Y_Upper_1.curves[:, 1:-1],
+        Curve_Rib_Stiffener_Y_Upper_1.curves[:, 1:-1],
+        Curve_Upper_Rib.curves[:-1, 1:-1],
+        Surfaces_Lower_Stringers_L.surface_counter,
+        Surfaces_Lower_Stringers_L.component_counter,
+        Surfaces_Lower_Stringers_L.assembly_counter,
+        'Rib_Caps_Upper_1',
+        Curve_Upper_Rib.zeros)
 
-# Surfaces_Rib_Caps_Upper_2 =\
-#     surface_classes.RibCaps(
-#         N_RIBS - 1,
-#         shape_of_array[2] - 3,
-#         Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
-#         Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
-#         Curve_Upper_Rib.curves[1:, 1:-1],
-#         Surfaces_Rib_Caps_Upper_1.surface_counter,
-#         Surfaces_Rib_Caps_Upper_1.component_counter,
-#         Surfaces_Rib_Caps_Upper_1.assembly_counter,
-#         'Rib_Caps_Upper_2')
+Surfaces_Rib_Caps_Upper_2 =\
+    surface_classes.RibCaps2(
+        N_RIBS - 1,
+        shape_of_array[2] - 3,
+        Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
+        Curve_Rib_Stiffener_Y_Upper_2.curves[:, 1:-1],
+        Curve_Upper_Rib.curves[1:, 1:-1],
+        Surfaces_Rib_Caps_Upper_1.surface_counter,
+        Surfaces_Rib_Caps_Upper_1.component_counter,
+        Surfaces_Rib_Caps_Upper_1.assembly_counter,
+        'Rib_Caps_Upper_2',
+        Curve_Upper_Rib.zeros)
 
-# Surfaces_Rib_Caps_Lower_1 =\
-#     surface_classes.RibCaps(
-#         N_RIBS - 1,
-#         shape_of_array[2] - 3,
-#         Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
-#         Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
-#         Curve_Lower_Rib.curves[:-1, 1:-1],
-#         Surfaces_Rib_Caps_Upper_2.surface_counter,
-#         Surfaces_Rib_Caps_Upper_2.component_counter,
-#         Surfaces_Rib_Caps_Upper_2.assembly_counter,
-#         'Rib_Caps_Lower_1')
+Surfaces_Rib_Caps_Lower_1 =\
+    surface_classes.RibCaps(
+        N_RIBS - 1,
+        shape_of_array[2] - 3,
+        Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
+        Curve_Rib_Stiffener_Y_Lower_1.curves[:, 1:-1],
+        Curve_Lower_Rib.curves[:-1, 1:-1],
+        Surfaces_Rib_Caps_Upper_2.surface_counter,
+        Surfaces_Rib_Caps_Upper_2.component_counter,
+        Surfaces_Rib_Caps_Upper_2.assembly_counter,
+        'Rib_Caps_Lower_1',
+        Curve_Upper_Rib.zeros
+        )
 
-# Surfaces_Rib_Caps_Lower_2 =\
-#     surface_classes.RibCaps(
-#         N_RIBS - 1,
-#         shape_of_array[2] - 3,
-#         Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
-#         Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
-#         Curve_Lower_Rib.curves[1:, 1:-1],
-#         Surfaces_Rib_Caps_Lower_1.surface_counter,
-#         Surfaces_Rib_Caps_Lower_1.component_counter,
-#         Surfaces_Rib_Caps_Lower_1.assembly_counter,
-#         'Rib_Caps_Lower_2')
+Surfaces_Rib_Caps_Lower_2 =\
+    surface_classes.RibCaps2(
+        N_RIBS - 1,
+        shape_of_array[2] - 3,
+        Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
+        Curve_Rib_Stiffener_Y_Lower_2.curves[:, 1:-1],
+        Curve_Lower_Rib.curves[1:, 1:-1],
+        Surfaces_Rib_Caps_Lower_1.surface_counter,
+        Surfaces_Rib_Caps_Lower_1.component_counter,
+        Surfaces_Rib_Caps_Lower_1.assembly_counter,
+        'Rib_Caps_Lower_2',
+        Curve_Upper_Rib.zeros)
 
 
 Surfaces_Rib_Stiffeners_1 =\
@@ -813,9 +915,9 @@ Surfaces_Rib_Stiffeners_1 =\
         Stringer_ID_Upper[1, :, :],
         Stringer_ID_Lower[1, :, :],
         Stringer_ID_Lower[0, :, :],
-        Surfaces_Lower_Stringers_L.surface_counter,
-        Surfaces_Lower_Stringers_L.component_counter,
-        Surfaces_Lower_Stringers_L.assembly_counter,
+        Surfaces_Rib_Caps_Lower_2.surface_counter,
+        Surfaces_Rib_Caps_Lower_2.component_counter,
+        Surfaces_Rib_Caps_Lower_2.assembly_counter,
         'Rib_Stiffeners_1')
 
 Surfaces_Rib_Stiffeners_2 =\
@@ -831,50 +933,488 @@ Surfaces_Rib_Stiffeners_2 =\
         Surfaces_Rib_Stiffeners_1.assembly_counter,
         'Rib_Stiffeners_2')
 
-
-# surface_classes.CutRibHoles(
-#     Surfaces_Main_Rib.surfaces,
-#     Curve_Rib_Holes_Upper.curves,
-#     N_RIBS,
-#     N_SPARS)
-
-# surface_classes.CutRibHoles(
-#     Surfaces_Main_Rib.surfaces,
-#     Curve_Rib_Holes_Lower.curves,
-#     N_RIBS,
-#     N_SPARS)
-
 SURFACE_COUNTER = Surfaces_Rib_Stiffeners_2.surface_counter
 
-# For rib's holes
-# Create circles in each of the stringer point with a radius equal to stringers height
-# *createlist nodes 1 69 49 29
-# *createvector 1 0 1 0
-# *createcirclefromcenterradius 1 1 0.08 360 0
+Surface_Stringer_ID_Upper_Runout = {}
+Surface_Stringer_ID_Lower_Runout = {}
+Surface_Stringer_ID_Upper_Runout_L = {}
+Surface_Stringer_ID_Lower_Runout_L = {}
+for i in range(len(keys)):
+    SURFACE_COUNTER += 1
+    my_list = list((Stringer_ID_Upper_Runout[keys[i]],
+                    Stringer_ID_Upper_Runout_Extend[keys[i]],
+                    Stringer_ID_Upper_Extend[keys[i][1] - 1, keys[i][0]],
+                    Stringer_ID_Upper[0, keys[i][1] - 1, keys[i][0]]))
+    my_str = ' '.join(map(str, my_list))
+    cmd = "*surfacemode 4\n*createlist nodes 1 " + my_str
+    file.write(cmd)
+    file.write("\n*surfacesplineonnodesloop2 1 0\n")
+    Surface_Stringer_ID_Upper_Runout[keys[i]] = SURFACE_COUNTER
 
-with open('Wing_Geometry_Generation.tcl', 'a+') as file:
-    # Clear all nodes
-    file.write("*nodecleartempmark\n")
-    # Clean-up the geometry
-    my_list = list(range(1, SURFACE_COUNTER + 1))
-    STR_IDS = ' '.join(map(str, my_list))
-    CMD = "*createmark surfaces 1 " + STR_IDS
-    file.write(CMD)
-    file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
-    # Save the file and close
-    file.write("*writefile \"C:/Users/efilippo/Documents/"
-               "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
-    # file.write(
-    #         "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-    #         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-    # )
-    file.write("return; # Stop script and return to application\n*quit 1;\n")
+    SURFACE_COUNTER += 1
+    my_list = list((Stringer_ID_Lower_Runout[keys[i]],
+                    Stringer_ID_Lower_Runout_Extend[keys[i]],
+                    Stringer_ID_Lower_Extend[keys[i][1] - 1, keys[i][0]],
+                    Stringer_ID_Lower[0, keys[i][1] - 1, keys[i][0]]))
+    my_str = ' '.join(map(str, my_list))
+    cmd = "*surfacemode 4\n*createlist nodes 1 " + my_str
+    file.write(cmd)
+    file.write("\n*surfacesplineonnodesloop2 1 0\n")
+    Surface_Stringer_ID_Lower_Runout[keys[i]] = SURFACE_COUNTER
+
+    SURFACE_COUNTER += 1
+    my_list = list((Stringer_ID_Upper_Runout_Extend[keys[i]],
+                    Stringer_ID_Upper_Runout_Extend_L[keys[i]],
+                    Stringer_ID_Upper_Extend_L[keys[i][1] - 1, keys[i][0]],
+                    Stringer_ID_Upper_Extend[keys[i][1] - 1, keys[i][0]]))
+    my_str = ' '.join(map(str, my_list))
+    cmd = "*surfacemode 4\n*createlist nodes 1 " + my_str
+    file.write(cmd)
+    file.write("\n*surfacesplineonnodesloop2 1 0\n")
+    Surface_Stringer_ID_Upper_Runout_L[keys[i]] = SURFACE_COUNTER
+
+    SURFACE_COUNTER += 1
+    my_list = list((Stringer_ID_Lower_Runout_Extend[keys[i]],
+                    Stringer_ID_Lower_Runout_Extend_L[keys[i]],
+                    Stringer_ID_Lower_Extend_L[keys[i][1] - 1, keys[i][0]],
+                    Stringer_ID_Lower_Extend[keys[i][1] - 1, keys[i][0]]))
+    my_str = ' '.join(map(str, my_list))
+    cmd = "*surfacemode 4\n*createlist nodes 1 " + my_str
+    file.write(cmd)
+    file.write("\n*surfacesplineonnodesloop2 1 0\n")
+    Surface_Stringer_ID_Lower_Runout_L[keys[i]] = SURFACE_COUNTER
+
+
+Comp_Rib_Stiffeners = []
+for i in range(0, N_RIBS):
+    if i == 0:
+        Comp_Rib_Stiffeners.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Stiffeners',
+                Surfaces_Rib_Stiffeners_1.surfaces[i, :],
+                i, mesh_n[i], file)
+            )
+    elif i == N_RIBS - 1:
+        Comp_Rib_Stiffeners.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Stiffeners',
+                Surfaces_Rib_Stiffeners_2.surfaces[i - 1, :],
+                i, mesh_n[i], file)
+            )
+    elif i < N_RIBS - 1:
+        Comp_Rib_Stiffeners.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Stiffeners',
+                np.concatenate((Surfaces_Rib_Stiffeners_1.surfaces[i, :],
+                                Surfaces_Rib_Stiffeners_2.surfaces[i - 1, :]),
+                               axis=None),
+                i, mesh_n[i], file)
+            )
+    COMPONENT_COUNTER += 1
+
+Comp_Rib_Caps_Upper = []
+for i in range(0, N_RIBS):
+    if i == 0:
+        Comp_Rib_Caps_Upper.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Upper',
+                Surfaces_Rib_Caps_Upper_1.surfaces[i, :],
+                i, mesh_n[i], file)
+            )
+    elif i == N_RIBS - 1:
+        Comp_Rib_Caps_Upper.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Upper',
+                Surfaces_Rib_Caps_Upper_2.surfaces[i - 1, :],
+                i, mesh_n[i], file)
+            )
+    elif i < N_RIBS - 1:
+        Comp_Rib_Caps_Upper.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Upper',
+                np.concatenate((Surfaces_Rib_Caps_Upper_1.surfaces[i, :],
+                                Surfaces_Rib_Caps_Upper_2.surfaces[i - 1, :]),
+                               axis=None),
+                i, mesh_n[i], file)
+            )
+    COMPONENT_COUNTER += 1
+
+Comp_Rib_Caps_Lower = []
+for i in range(0, N_RIBS):
+    if i == 0:
+        Comp_Rib_Caps_Lower.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Lower',
+                Surfaces_Rib_Caps_Lower_1.surfaces[i, :],
+                i, mesh_n[i], file)
+            )
+    elif i == N_RIBS - 1:
+        Comp_Rib_Caps_Lower.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Lower',
+                Surfaces_Rib_Caps_Lower_2.surfaces[i - 1, :],
+                i, mesh_n[i], file)
+            )
+    elif i < N_RIBS - 1:
+        Comp_Rib_Caps_Lower.append(
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Rib_Caps_Lower',
+                np.concatenate((Surfaces_Rib_Caps_Lower_1.surfaces[i, :],
+                                Surfaces_Rib_Caps_Lower_2.surfaces[i - 1, :]),
+                               axis=None),
+                i, mesh_n[i], file)
+            )
+    COMPONENT_COUNTER += 1
+
+Comp_Main_Rib = []
+for i in range(0, N_RIBS):
+    Comp_Main_Rib.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Ribs',
+            np.concatenate((
+                Surfaces_Main_Rib.surfaces[i, :, :],
+                Surfaces_Left_Side_Main_Rib.surfaces[i, :],
+                Surfaces_Right_Side_Main_Rib.surfaces[i, :],
+                Surfaces_Left_Spar_Cap_Rib.surfaces[i, :],
+                Surfaces_Right_Spar_Cap_Rib.surfaces[i, :],
+                ),
+                axis=None),
+            i, mesh_n[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Upper_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Upper_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Upper_Skin',
+            np.concatenate((
+                Surfaces_Upper_Skin.surfaces[i, :, :],
+                Surfaces_Left_Side_Upper_Skin.surfaces[i, :],
+                Surfaces_Right_Side_Upper_Skin.surfaces[i, :],
+                ),
+                axis=None),
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Lower_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Lower_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Lower_Skin',
+            np.concatenate((
+                Surfaces_Lower_Skin.surfaces[i, :, :],
+                Surfaces_Left_Side_Lower_Skin.surfaces[i, :],
+                Surfaces_Right_Side_Lower_Skin.surfaces[i, :],
+                ),
+                axis=None),
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Spars = {}
+for i in range(0, N_RIBS - 1):
+    for j in range(0, N_SPARS):
+        Comp_Spars[i, j] =\
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Spar_No_%.0f' % (j),
+                Surfaces_Spars.surfaces[i, j],
+                i, mesh_n_minus_1[i], file)
+        COMPONENT_COUNTER += 1
+
+Comp_Upper_Spar_Caps = {}
+for i in range(0, N_RIBS - 1):
+    for j in range(0, N_SPARS):
+        Comp_Upper_Spar_Caps[i, j] =\
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Upper_Spar_Cap_No_%.0f' % (j),
+                np.concatenate((
+                    Surfaces_Upper_Left_Spar_Cap.surfaces[i, j],
+                    Surfaces_Upper_Right_Spar_Cap.surfaces[i, j]
+                    ),
+                    axis=None),
+                i, mesh_n_minus_1[i], file)
+        COMPONENT_COUNTER += 1
+
+Comp_Lower_Spar_Caps = {}
+for i in range(0, N_RIBS - 1):
+    for j in range(0, N_SPARS):
+        Comp_Lower_Spar_Caps[i, j] =\
+            components_classes.ComponentClass(
+                COMPONENT_COUNTER, 'Lower_Spar_Cap_No_%.0f' % (j),
+                np.concatenate((
+                    Surfaces_Lower_Left_Spar_Cap.surfaces[i, j],
+                    Surfaces_Lower_Right_Spar_Cap.surfaces[i, j]
+                    ),
+                    axis=None),
+                i, mesh_n_minus_1[i], file)
+        COMPONENT_COUNTER += 1
+
+Comp_Upper_Stringers_Z = []
+for i in range(0, N_RIBS - 1):
+    key = [item for item in keys if item[1] == i]
+    surf = Surfaces_Upper_Stringers.surfaces[i, :, :]
+    surf = surf.flatten()
+    if key:
+        surf = surf +\
+            Surface_Stringer_ID_Upper_Runout[key[0]]
+
+    Comp_Upper_Stringers_Z.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Upper_Stringers_Z',
+            surf,
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Upper_Stringers_X = []
+for i in range(0, N_RIBS - 1):
+    Comp_Upper_Stringers_X.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Upper_Stringers_X',
+            Surfaces_Upper_Stringers_L.surfaces[i, :, :],
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Lower_Stringers_Z = []
+for i in range(0, N_RIBS - 1):
+    Comp_Lower_Stringers_Z.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Lower_Stringers_Z',
+            Surfaces_Lower_Stringers.surfaces[i, :, :],
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Lower_Stringers_X = []
+for i in range(0, N_RIBS - 1):
+    Comp_Lower_Stringers_X.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Lower_Stringers_X',
+            Surfaces_Lower_Stringers_L.surfaces[i, :, :],
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Front_Rib = []
+for i in range(0, N_RIBS):
+    Comp_Front_Rib.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Front_Rib',
+            Surfaces_Front_Rib.surfaces[i, :],
+            i, mesh_n[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Rear_Rib = []
+for i in range(0, N_RIBS):
+    Comp_Rear_Rib.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Rear_Rib',
+            Surfaces_Rear_Rib.surfaces[i, :],
+            i, mesh_n[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Front_Upper_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Front_Upper_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Front_Upper_Skin',
+            Surfaces_Front_Upper_Skin.surfaces[i, :],
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Front_Lower_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Front_Lower_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Front_Lower_Skin',
+            Surfaces_Front_Lower_Skin.surfaces[i, :],
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Rear_Upper_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Rear_Upper_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Rear_Upper_Skin',
+            Surfaces_Rear_Upper_Skin.surfaces[i, :],
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Comp_Rear_Lower_Skin = []
+for i in range(0, N_RIBS - 1):
+    Comp_Rear_Lower_Skin.append(
+        components_classes.ComponentClass(
+            COMPONENT_COUNTER, 'Rear_Lower_Skin',
+            Surfaces_Rear_Lower_Skin.surfaces[i, :],
+            i, mesh_n_minus_1[i], file)
+        )
+    COMPONENT_COUNTER += 1
+
+Assembly_Rib_Stiffeners =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rib_Stiffeners',
+        [ComponentClass.id for ComponentClass in Comp_Rib_Stiffeners],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Rib_Caps =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rib_Caps',
+        [ComponentClass.id for ComponentClass in Comp_Rib_Caps_Upper] +
+        [ComponentClass.id for ComponentClass in Comp_Rib_Caps_Lower],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Upper_Stringers =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Upper_Stringers',
+        [ComponentClass.id for ComponentClass in Comp_Upper_Stringers_X] +
+        [ComponentClass.id for ComponentClass in Comp_Upper_Stringers_Z],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Lower_Stringers =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Lower_Stringers',
+        [ComponentClass.id for ComponentClass in Comp_Lower_Stringers_X] +
+        [ComponentClass.id for ComponentClass in Comp_Lower_Stringers_Z],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Upper_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Upper_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Upper_Skin],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Lower_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Lower_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Lower_Skin],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Main_Rib =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Main_Rib',
+        [ComponentClass.id for ComponentClass in Comp_Main_Rib],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Front_Rib =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Front_Rib',
+        [ComponentClass.id for ComponentClass in Comp_Front_Rib],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Rear_Rib =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rear_Rib',
+        [ComponentClass.id for ComponentClass in Comp_Rear_Rib],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Rear_Upper_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rear_Upper_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Rear_Upper_Skin],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Rear_Lower_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Rear_Lower_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Rear_Lower_Skin],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Front_Upper_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Front_Upper_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Front_Upper_Skin],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Front_Lower_Skin =\
+    components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Front_Lower_Skin',
+        [ComponentClass.id for ComponentClass in Comp_Front_Lower_Skin],
+        file)
+ASSEMBLY_COUNTER += 1
+
+Assembly_Spars = []
+for i in range(0, N_SPARS):
+    comp_list = []
+    for j in range(0, N_RIBS - 1):
+        comp_list.append(Comp_Spars[j, i].id)
+    Assembly_Spars.append(components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Spars_No_%.0f' % (i), comp_list, file))
+    ASSEMBLY_COUNTER += 1
+
+Assembly_Spar_Caps = []
+for i in range(0, N_SPARS):
+    comp_list = []
+    for j in range(0, N_RIBS - 1):
+        comp_list.append(Comp_Upper_Spar_Caps[j, i].id)
+        comp_list.append(Comp_Lower_Spar_Caps[j, i].id)
+    Assembly_Spar_Caps.append(components_classes.AssemblyClass(
+        ASSEMBLY_COUNTER, 'Spar_Caps_No_%.0f' % (i), comp_list, file))
+    ASSEMBLY_COUNTER += 1
+
+# if mesh_parameters.mesh_refinement == 1:
+#     list_of_components = (
+#         Comp_Main_Rib + Comp_Lower_Skin + Comp_Upper_Skin + Comp_Lower_Stringers_X +
+#         Comp_Lower_Stringers_Z + Comp_Upper_Stringers_X + Comp_Upper_Stringers_Z +
+#         list(Comp_Spars.values()) + list(Comp_Upper_Spar_Caps.values()) +
+#         list(Comp_Lower_Spar_Caps.values()) + Comp_Rib_Stiffeners +
+#         Comp_Rib_Caps_Upper + Comp_Rib_Caps_Lower
+#         )
+#     Mesh_Generation.GenerateMesh(list_of_components, file)
+# else:
+#     list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
+#     Mesh_Generation.GenerateGlobalMesh(list_of_surfaces, file)
+
+# list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
+# Mesh_Generation.GenerateWithAutomesh(list_of_surfaces, file)
+
+
+# Clear all nodes
+# file.write("*nodecleartempmark\n")
+
+# Clean-up the geometry
+# my_list = list(range(1, SURFACE_COUNTER + 1))
+# STR_IDS = ' '.join(map(str, my_list))
+# CMD = "*createmark surfaces 1 " + STR_IDS
+# file.write(CMD)
+# file.write('\n*selfstitchcombine 1 146 0.01 0.01\n')
+# Save the file and close
+# file.write("*writefile \"C:/Users/efilippo/Documents/"
+#            "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
+
+file.write(
+        "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+        "ASD_Lab_Parametric_Design_of_Wing_OOP_Stringers_Inclined/"
+        "HM_Files/wing.hm\" 1\n"
+)
+file.write("return; # Stop script and return to application\n*quit 1;\n")
+
+
 file.close()
 
 # ################# Running the Command file: ##################
 
 # Location of .tcl script and run
-TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
+TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP_Stringers_Inclined/"\
                     "Wing_Geometry_Generation.tcl"
 run_argument(TCL_SCRIPT_PATH)
 

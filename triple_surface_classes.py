@@ -37,9 +37,11 @@ class MultipleSurfaces:
                         self.ids_4[i, j, k + zeros]))
         return my_list
 
-    def check_for_zeros(self, i, j, k):
+    def check_for_zeros(self, i, j, k, zeros):
         check = 0
-        if self.ids_1[i, j, k] == 0 or self.ids_2[i, j, k] == 0:
+        if self.ids_1[i, j, k] == 0 or self.ids_2[i, j, k] == 0 or\
+                self.ids_3[i, j, k - 1 + zeros] == 0 or\
+                self.ids_4[i, j, k + zeros] == 0:
             check = 1
         return check
 
@@ -49,7 +51,7 @@ class MultipleSurfaces:
                 zeros = return_zeros(curve[i, :])
                 for j in range(0, self.n_2):
                     for k in range(0, self.n_3 - zeros):
-                        if k != 0 and self.check_for_zeros(i, j, k) != 1:
+                        if k != 0 and self.check_for_zeros(i, j, k, zeros) != 1:
                             my_list = self.list_creation(i, j, k, zeros)
                             my_str = ' '.join(map(str, my_list))
                             cmd = "*surfacemode 4\n*createmark lines 1 " + my_str
@@ -57,35 +59,7 @@ class MultipleSurfaces:
                             file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
                             self.surface_counter += 1
                             self.surfaces[i, j, k - 1] = self.surface_counter
-                self.component_counter += 1
-                self.components[i, 0] = self.component_counter
-                file.write('*createentity comps name="'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write(
-                    '*startnotehistorystate {Moved surfaces into component "'
-                    + self.components_name + '_%.0f"}\n' % (i + 1))
-                file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0, 0], self.surfaces[i, -1, - zeros - 1]))
-                file.write('*movemark surfaces 1 "'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write('*endnotehistorystate {Moved surfaces into component "'
-                           + self.components_name + '_%.0f"}\n'
-                           % (i + 1))
-            file.write(
-                '*createentity assems name="'
-                + self.components_name + '"\n')
-            file.write(
-                '*startnotehistorystate {Modified Components of assembly}\n')
-            file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assembly_counter,
-                          self.components[0, 0],
-                          self.components[-1, 0]))
-            file.write(
-                '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assembly_counter += 1
 
 
 class StringerSurfaces(MultipleSurfaces):
@@ -133,36 +107,8 @@ class StringerSurfaces(MultipleSurfaces):
                             file.write("\n*surfacesplineonlinesloop 1 1 0 67\n")
                             self.surface_counter += 1
                             self.surfaces[i, j, k] = self.surface_counter
-                self.component_counter += 1
-                self.components[i, 0] = self.component_counter
-                file.write('*createentity comps name="'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write(
-                    '*startnotehistorystate {Moved surfaces into component "'
-                    + self.components_name + '_%.0f"}\n' % (i + 1))
-                file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, 0, return_ith_from_zero(self.surfaces[i, 0, :])],
-                              self.surfaces[i, -1, -1]))
-                file.write('*movemark surfaces 1 "'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write('*endnotehistorystate {Moved surfaces into component "'
-                           + self.components_name + '_%.0f"}\n'
-                           % (i + 1))
-            file.write(
-                '*createentity assems name="'
-                + self.components_name + '"\n')
-            file.write(
-                '*startnotehistorystate {Modified Components of assembly}\n')
-            file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assembly_counter,
-                          self.components[0, 0],
-                          self.components[-1, 0]))
-            file.write(
-                '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assembly_counter += 1
+
 
 class RibStiffners:
     def __init__(self, n_1, n_2, ids_1, ids_2, ids_3, ids_4,
@@ -210,35 +156,7 @@ class RibStiffners:
                         file.write("\n*surfacesplineonnodesloop2 1 0\n")
                         self.surface_counter += 1
                         self.surfaces[i, j] = self.surface_counter
-                self.component_counter += 1
-                self.components[i, 0] = self.component_counter
-                file.write('*createentity comps name="'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write(
-                    '*startnotehistorystate {Moved surfaces into component "'
-                    + self.components_name + '_%.0f"}\n' % (i + 1))
-                file.write('*createmark surfaces 1 %.0f-%.0f\n'
-                           % (self.surfaces[i, return_ith_from_zero(self.surfaces[i, :])], self.surfaces[i, -1]))
-                file.write('*movemark surfaces 1 "'
-                           + self.components_name + '_%.0f"\n'
-                           % (i + 1))
-                file.write('*endnotehistorystate {Moved surfaces into component "'
-                           + self.components_name + '_%.0f"}\n'
-                           % (i + 1))
-            file.write(
-                '*createentity assems name="'
-                + self.components_name + '"\n')
-            file.write(
-                '*startnotehistorystate {Modified Components of assembly}\n')
-            file.write('*setvalue assems id=%.0f components={comps %.0f-%.0f}'
-                       % (self.assembly_counter,
-                          self.components[0, 0],
-                          self.components[-1, 0]))
-            file.write(
-                '\n*endnotehistorystate {Modified Components of assembly}\n')
         file.close()
-        self.assembly_counter += 1
 
 
 def return_ith_from_zero(vec):
