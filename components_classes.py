@@ -3,6 +3,8 @@ class AssemblyClass:
         self.id = counter
         self.name = name
         self.components = components
+        self.components_id = [ComponentClass.id for ComponentClass in components]
+        self.components_name = [ComponentClass.name for ComponentClass in components]
 
         self.write_tcl(file)
 
@@ -12,7 +14,7 @@ class AssemblyClass:
             + self.name + '"\n')
         file.write(
             '*startnotehistorystate {Modified Components of assembly}\n')
-        str_ids = ' '.join(map(str, self.components))
+        str_ids = ' '.join(map(str, self.components_id))
         cmd = '*setvalue assems id=%.0f components={comps ' % (self.id)
         file.write(cmd + str_ids + '}')
         file.write(

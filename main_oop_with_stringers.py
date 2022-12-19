@@ -36,6 +36,7 @@ import surface_classes
 import triple_surface_classes
 import components_classes
 import mesh_generation
+import equivalence
 from run_arg import run_argument
 from delete_files import delete_files
 
@@ -54,9 +55,9 @@ delete_files()
 parameters = Parameters(
     29.38,  # Semi-span
     0.37,   # Yehudi break normalized
-    4,      # Number of spars
-    5,      # Number of central ribs
-    8,     # Number of ribs from fuselage till yehudi break
+    2,      # Number of spars
+    3,      # Number of central ribs
+    5,     # Number of ribs from fuselage till yehudi break
     9,     # Number of ribs from yehudi break till semi-span
     0.15,   # front spar position
     0.75,   # rear spar position
@@ -1088,94 +1089,94 @@ for i in range(0, N_RIBS - 1):
 Assembly_Rib_Stiffeners =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Rib_Stiffeners',
-        [ComponentClass.id for ComponentClass in Comp_Rib_Stiffeners],
+        [ComponentClass for ComponentClass in Comp_Rib_Stiffeners],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Rib_Caps =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Rib_Caps',
-        [ComponentClass.id for ComponentClass in Comp_Rib_Caps_Upper] +
-        [ComponentClass.id for ComponentClass in Comp_Rib_Caps_Lower],
+        [ComponentClass for ComponentClass in Comp_Rib_Caps_Upper] +
+        [ComponentClass for ComponentClass in Comp_Rib_Caps_Lower],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Upper_Stringers =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Upper_Stringers',
-        [ComponentClass.id for ComponentClass in Comp_Upper_Stringers_X] +
-        [ComponentClass.id for ComponentClass in Comp_Upper_Stringers_Z],
+        [ComponentClass for ComponentClass in Comp_Upper_Stringers_X] +
+        [ComponentClass for ComponentClass in Comp_Upper_Stringers_Z],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Lower_Stringers =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Lower_Stringers',
-        [ComponentClass.id for ComponentClass in Comp_Lower_Stringers_X] +
-        [ComponentClass.id for ComponentClass in Comp_Lower_Stringers_Z],
+        [ComponentClass for ComponentClass in Comp_Lower_Stringers_X] +
+        [ComponentClass for ComponentClass in Comp_Lower_Stringers_Z],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Upper_Skin =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Upper_Skin',
-        [ComponentClass.id for ComponentClass in Comp_Upper_Skin],
+        [ComponentClass for ComponentClass in Comp_Upper_Skin],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Lower_Skin =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Lower_Skin',
-        [ComponentClass.id for ComponentClass in Comp_Lower_Skin],
+        [ComponentClass for ComponentClass in Comp_Lower_Skin],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Main_Rib =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Main_Rib',
-        [ComponentClass.id for ComponentClass in Comp_Main_Rib],
+        [ComponentClass for ComponentClass in Comp_Main_Rib],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Front_Rib =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Front_Rib',
-        [ComponentClass.id for ComponentClass in Comp_Front_Rib],
+        [ComponentClass for ComponentClass in Comp_Front_Rib],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Rear_Rib =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Rear_Rib',
-        [ComponentClass.id for ComponentClass in Comp_Rear_Rib],
+        [ComponentClass for ComponentClass in Comp_Rear_Rib],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Rear_Upper_Skin =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Rear_Upper_Skin',
-        [ComponentClass.id for ComponentClass in Comp_Rear_Upper_Skin],
+        [ComponentClass for ComponentClass in Comp_Rear_Upper_Skin],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Rear_Lower_Skin =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Rear_Lower_Skin',
-        [ComponentClass.id for ComponentClass in Comp_Rear_Lower_Skin],
+        [ComponentClass for ComponentClass in Comp_Rear_Lower_Skin],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Front_Upper_Skin =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Front_Upper_Skin',
-        [ComponentClass.id for ComponentClass in Comp_Front_Upper_Skin],
+        [ComponentClass for ComponentClass in Comp_Front_Upper_Skin],
         file)
 ASSEMBLY_COUNTER += 1
 
 Assembly_Front_Lower_Skin =\
     components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Front_Lower_Skin',
-        [ComponentClass.id for ComponentClass in Comp_Front_Lower_Skin],
+        [ComponentClass for ComponentClass in Comp_Front_Lower_Skin],
         file)
 ASSEMBLY_COUNTER += 1
 
@@ -1183,7 +1184,7 @@ Assembly_Spars = []
 for i in range(0, N_SPARS):
     comp_list = []
     for j in range(0, N_RIBS - 1):
-        comp_list.append(Comp_Spars[j, i].id)
+        comp_list.append(Comp_Spars[j, i])
     Assembly_Spars.append(components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Spars_No_%.0f' % i, comp_list, file))
     ASSEMBLY_COUNTER += 1
@@ -1192,12 +1193,13 @@ Assembly_Spar_Caps = []
 for i in range(0, N_SPARS):
     comp_list = []
     for j in range(0, N_RIBS - 1):
-        comp_list.append(Comp_Upper_Spar_Caps[j, i].id)
-        comp_list.append(Comp_Lower_Spar_Caps[j, i].id)
+        comp_list.append(Comp_Upper_Spar_Caps[j, i])
+        comp_list.append(Comp_Lower_Spar_Caps[j, i])
     Assembly_Spar_Caps.append(components_classes.AssemblyClass(
         ASSEMBLY_COUNTER, 'Spar_Caps_No_%.0f' % i, comp_list, file))
     ASSEMBLY_COUNTER += 1
 
+# Mesh generation
 # if mesh_parameters.mesh_refinement == 1:
 #     list_of_components = (
 #         Comp_Main_Rib + Comp_Lower_Skin + Comp_Upper_Skin + Comp_Lower_Stringers_X +
@@ -1214,13 +1216,17 @@ for i in range(0, N_SPARS):
 list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
 mesh_generation.GenerateWithAutomesh(list_of_surfaces, file)
 
+# Equivalence of the desired nodes
+equivalence.MeshEquivalence(Assembly_Upper_Skin.components_name,
+                            Assembly_Upper_Stringers.components_name,
+                            0.1, file)
+
 # Save the file and close
 # file.write("*writefile \"C:/Users/efilippo/Documents/"
 #            "pyPDMW/HM_Files/wing.hm\" 1\n")
-file.write(
-        "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-        "pyPDMW/HM_Files/wing.hm\" 1\n"
-)
+
+file.write("*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+           "pyPDMW/HM_Files/wing.hm\" 1\n")
 file.write("return; # Stop script and return to application\n*quit 1;\n")
 
 # Close the file
