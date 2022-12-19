@@ -14,3 +14,7 @@ Libraries:
 - matplotlib (if diagrams are needed)
 
 You must change all the relative paths if install to other PC
+
+An example of the program's capabilities:
+
+![wing_example](images/wing.png)
