@@ -280,7 +280,6 @@ class RibsInclined:
                              rib_x[0, self.Rib_Sections_ID[1] - 1, :],
                              rib_y[0, self.Rib_Sections_ID[1] - 1, :])
             if len(int_x) == 0 and i > self.Rib_Sections_ID[1] - 1:
-                print(int_x, int_y)
                 idx = i
                 break
 

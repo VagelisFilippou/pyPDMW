@@ -1,4 +1,4 @@
-# ASD Lab Parametric Design of Wing
+# Parametric Design and Meshing of Wings (pyPDMW)
 Parametric wing structure design tool in Python-HyperMesh.
 
 Pieces of software Needed:

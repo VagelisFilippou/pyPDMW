@@ -1,7 +1,7 @@
 """
 Script for uCRM-9 wing's internal structure parameterization in HyperMesh.
 
-Evangelos Filippou, October 2022
+Evangelos Filippou, December 2022
 
 Pieces of software Needed:
 - HyperMesh
@@ -10,14 +10,11 @@ Libraries:
 - math
 - numpy
 - time
-- urllib.request
+- urllib.request (if you want to construct the aerodynamic shape)
 - subprocess
 - os
 - matplotlib (if diagrams are needed)
 - scipy
-
-Other Things:
-- Internet Connection
 
 Advices:
 - You must change all the relative paths if install to other PC
@@ -29,7 +26,7 @@ import numpy as np
 from wing_parameters import Parameters
 from derive_geometry import DerivedGeometry
 from read_crm_data_incl import RibsInclined
-from find_inclination import RibsOrientation
+# from find_inclination import RibsOrientation
 from spar_and_spar_caps_coords import SparsAndCapsCoords
 from store_spar_ids import SparsCapsIDs
 from connection_nodes import ConnectionNodes
@@ -954,7 +951,7 @@ for i in range(0, N_RIBS - 1):
     for j in range(0, N_SPARS):
         Comp_Spars[i, j] =\
             components_classes.ComponentClass(
-                COMPONENT_COUNTER, 'Spar_No_%.0f' % (j),
+                COMPONENT_COUNTER, 'Spar_No_%.0f' % j,
                 Surfaces_Spars.surfaces[i, j],
                 i, mesh_n_minus_1[i], file)
         COMPONENT_COUNTER += 1
@@ -964,7 +961,7 @@ for i in range(0, N_RIBS - 1):
     for j in range(0, N_SPARS):
         Comp_Upper_Spar_Caps[i, j] =\
             components_classes.ComponentClass(
-                COMPONENT_COUNTER, 'Upper_Spar_Cap_No_%.0f' % (j),
+                COMPONENT_COUNTER, 'Upper_Spar_Cap_No_%.0f' % j,
                 np.concatenate((
                     Surfaces_Upper_Left_Spar_Cap.surfaces[i, j],
                     Surfaces_Upper_Right_Spar_Cap.surfaces[i, j]
@@ -978,7 +975,7 @@ for i in range(0, N_RIBS - 1):
     for j in range(0, N_SPARS):
         Comp_Lower_Spar_Caps[i, j] =\
             components_classes.ComponentClass(
-                COMPONENT_COUNTER, 'Lower_Spar_Cap_No_%.0f' % (j),
+                COMPONENT_COUNTER, 'Lower_Spar_Cap_No_%.0f' % j,
                 np.concatenate((
                     Surfaces_Lower_Left_Spar_Cap.surfaces[i, j],
                     Surfaces_Lower_Right_Spar_Cap.surfaces[i, j]
@@ -1188,7 +1185,7 @@ for i in range(0, N_SPARS):
     for j in range(0, N_RIBS - 1):
         comp_list.append(Comp_Spars[j, i].id)
     Assembly_Spars.append(components_classes.AssemblyClass(
-        ASSEMBLY_COUNTER, 'Spars_No_%.0f' % (i), comp_list, file))
+        ASSEMBLY_COUNTER, 'Spars_No_%.0f' % i, comp_list, file))
     ASSEMBLY_COUNTER += 1
 
 Assembly_Spar_Caps = []
@@ -1198,7 +1195,7 @@ for i in range(0, N_SPARS):
         comp_list.append(Comp_Upper_Spar_Caps[j, i].id)
         comp_list.append(Comp_Lower_Spar_Caps[j, i].id)
     Assembly_Spar_Caps.append(components_classes.AssemblyClass(
-        ASSEMBLY_COUNTER, 'Spar_Caps_No_%.0f' % (i), comp_list, file))
+        ASSEMBLY_COUNTER, 'Spar_Caps_No_%.0f' % i, comp_list, file))
     ASSEMBLY_COUNTER += 1
 
 # if mesh_parameters.mesh_refinement == 1:
@@ -1218,12 +1215,12 @@ list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
 mesh_generation.GenerateWithAutomesh(list_of_surfaces, file)
 
 # Save the file and close
-file.write("*writefile \"C:/Users/efilippo/Documents/"
-           "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
-# file.write(
-#         "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-#         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-# )
+# file.write("*writefile \"C:/Users/efilippo/Documents/"
+#            "pyPDMW/HM_Files/wing.hm\" 1\n")
+file.write(
+        "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+        "pyPDMW/HM_Files/wing.hm\" 1\n"
+)
 file.write("return; # Stop script and return to application\n*quit 1;\n")
 
 # Close the file
@@ -1232,9 +1229,8 @@ file.close()
 # ################# Running the Command file: ##################
 
 # Location of .tcl script and run
-TCL_SCRIPT_PATH = "/ASD_Lab_Parametric_Design_of_Wing_OOP/"\
-                    "Wing_Geometry_Generation.tcl"
-run_argument(TCL_SCRIPT_PATH)
+TCL_SCRIPT_PATH = "/pyPDMW/Wing_Geometry_Generation.tcl"
+# run_argument(TCL_SCRIPT_PATH)
 
 # End time counter
 toc = time.perf_counter()
