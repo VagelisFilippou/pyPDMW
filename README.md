@@ -13,4 +13,7 @@ Libraries:
 - os
 - matplotlib (if diagrams are needed)
 
+Other Things:
+- Internet Connection (access to airfoiltools.com)
+
 You must change all the relative paths if install to other PC

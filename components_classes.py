@@ -25,6 +25,7 @@ class ComponentClass:
         self.id = counter
         self.name = name
         self.surfaces = surfaces.flatten()
+
         self.mesh_size = mesh_size
 
         self.write_tcl(index, file)
@@ -36,7 +37,7 @@ class ComponentClass:
         file.write(
             '*startnotehistorystate {Moved surfaces into component "'
             + self.name + '_%.0f"}\n' % (index + 1))
-        str_ids = ' '.join(map(str, self.surfaces))
+        str_ids = ' '.join(map(str, self.surfaces[self.surfaces != 0]))
         file.write("*createmark surfaces 1 " + str_ids)
         file.write('\n*movemark surfaces 1 "'
                    + self.name + '_%.0f"\n'

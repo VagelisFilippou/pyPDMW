@@ -109,7 +109,7 @@ class RibsInclined:
         self.rib_line_y = numpy.zeros((3, self.n, 2))
         self.inclination = numpy.zeros((3, self.n))
         # Fill the rest variables
-        self.interpolate(parameters)
+        self.interpolate()
 
     def rib_intersection(self, rib_line_x, rib_line_y, inclination, le_x, le_y,
                          te_x, te_y):
@@ -183,7 +183,7 @@ class RibsInclined:
 
         return rib_x, rib_y, rib_line_rotated_x, rib_line_rotated_y
 
-    def interpolate(self, parameters):
+    def interpolate(self):
         """
         It's the method that actually does the interpolation given the Y vector.
 
@@ -319,7 +319,7 @@ class RibsInclined:
         self.X = numpy.zeros((3, self.n, 2 * n_points))
         self.Y = numpy.zeros((3, self.n, 2 * n_points))
         self.Z = numpy.zeros((3, self.n, 2 * n_points))
-        w_list = [0, parameters.rib_stiffeners_width, - parameters.rib_stiffeners_width]
+        w_list = [0, 0.03, - 0.03]
         for k in range(0, 3):
             # Now concatenate the values
             x_new = numpy.concatenate(x_new_all[k, :, :])
@@ -337,14 +337,14 @@ class RibsInclined:
             request = numpy.transpose(numpy.array([x_new, y_new]))
 
             # Find the desired data for the upper points with griddata function
-            points_upper = numpy.transpose(numpy.array([x_upper, y_upper]))
-            values_upper = numpy.transpose(z_upper)
-            Z_upper = interpolate.griddata(points_upper, values_upper, request)
+            self.points_upper = numpy.transpose(numpy.array([x_upper, y_upper]))
+            self.values_upper = numpy.transpose(z_upper)
+            Z_upper = interpolate.griddata(self.points_upper, self.values_upper, request)
 
             # Find the desired data for the lower points with griddata function
-            points_lower = numpy.transpose(numpy.array([x_lower, y_lower]))
-            values_lower = numpy.transpose(z_lower)
-            Z_lower = interpolate.griddata(points_lower, values_lower, request)
+            self.points_lower = numpy.transpose(numpy.array([x_lower, y_lower]))
+            self.values_lower = numpy.transpose(z_lower)
+            Z_lower = interpolate.griddata(self.points_lower, self.values_lower, request)
 
             # Now reshape to an array form
             X = x_new.reshape(len(self.Y_vector), n_points)

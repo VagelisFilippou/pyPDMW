@@ -57,8 +57,8 @@ class DerivedGeometry:
 
         self.Y_list = np.zeros((self.N_ribs, 3))
         self.Y_list[:, 0] = Y_list
-        self.Y_list[:, 1] = self.Y_list[:, 0] + parameters.rib_stiffeners_width
-        self.Y_list[:, 2] = self.Y_list[:, 0] - parameters.rib_stiffeners_width
+        self.Y_list[:, 1] = self.Y_list[:, 0] + 0.03
+        self.Y_list[:, 2] = self.Y_list[:, 0] - 0.03
         self.Y_list[-1, 1] = self.Y_list[-1, 0]
         self.Y_list[0, 2] = self.Y_list[0, 0]
 
