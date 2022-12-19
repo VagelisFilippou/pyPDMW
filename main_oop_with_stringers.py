@@ -38,7 +38,7 @@ import curve_classes
 import surface_classes
 import triple_surface_classes
 import components_classes
-import Mesh_Generation
+import mesh_generation
 from run_arg import run_argument
 from delete_files import delete_files
 
@@ -57,10 +57,10 @@ delete_files()
 parameters = Parameters(
     29.38,  # Semi-span
     0.37,   # Yehudi break normalized
-    3,      # Number of spars
+    4,      # Number of spars
     5,      # Number of central ribs
-    10,     # Number of ribs from fuselage till yehudi break
-    30,     # Number of ribs from yehudi break till semi-span
+    8,     # Number of ribs from fuselage till yehudi break
+    9,     # Number of ribs from yehudi break till semi-span
     0.15,   # front spar position
     0.75,   # rear spar position
     0.1,    # fuselage section normalized
@@ -68,7 +68,7 @@ parameters = Parameters(
     0.3,    # Root right spar cap width
     0.1,    # Tip left spar cap width
     0.1,    # Tip right spar cap width
-    5,      # Number of stringers per spar section
+    6,      # Number of stringers per spar section
     0.05,   # Stringers tolerance from spar caps
     0.05    # Width of rib stiffeners
     )
@@ -1209,21 +1209,21 @@ for i in range(0, N_SPARS):
 #         list(Comp_Lower_Spar_Caps.values()) + Comp_Rib_Stiffeners +
 #         Comp_Rib_Caps_Upper + Comp_Rib_Caps_Lower
 #         )
-#     Mesh_Generation.GenerateMesh(list_of_components, file)
+#     mesh_generation.GenerateMesh(list_of_components, file)
 # else:
 #     list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
-#     Mesh_Generation.GenerateGlobalMesh(list_of_surfaces, file)
+#     mesh_generation.GenerateGlobalMesh(list_of_surfaces, file)
 
 list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
-Mesh_Generation.GenerateWithAutomesh(list_of_surfaces, file)
+mesh_generation.GenerateWithAutomesh(list_of_surfaces, file)
 
 # Save the file and close
-# file.write("*writefile \"C:/Users/efilippo/Documents/"
-#            "ASD_Lab_Parametric_Design_of_Wing_OOP_Init/HM_Files/wing.hm\" 1\n")
-file.write(
-        "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-        "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
-)
+file.write("*writefile \"C:/Users/efilippo/Documents/"
+           "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n")
+# file.write(
+#         "*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+#         "ASD_Lab_Parametric_Design_of_Wing_OOP/HM_Files/wing.hm\" 1\n"
+# )
 file.write("return; # Stop script and return to application\n*quit 1;\n")
 
 # Close the file
