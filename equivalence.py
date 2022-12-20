@@ -11,5 +11,5 @@ class MeshEquivalence:
         names_1 = ' '.join(f'"{w}"' for w in self.group_1)
         names_2 = ' '.join(f'"{w}"' for w in self.group_2)
 
-        file.write('*createmark components 1 ' + names_1 + names_2)
+        file.write('*createmark components 1 ' + names_1 + ' ' + names_2)
         file.write('\n*equivalence components 1 %.3f 1 0 0 0\n' % tolerance)

@@ -1236,7 +1236,7 @@ file.close()
 
 # Location of .tcl script and run
 TCL_SCRIPT_PATH = "/pyPDMW/Wing_Geometry_Generation.tcl"
-# run_argument(TCL_SCRIPT_PATH)
+run_argument(TCL_SCRIPT_PATH)
 
 # End time counter
 toc = time.perf_counter()
