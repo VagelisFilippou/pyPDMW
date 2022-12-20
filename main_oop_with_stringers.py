@@ -1217,9 +1217,32 @@ list_of_surfaces = list(range(1, SURFACE_COUNTER + 1))
 mesh_generation.GenerateWithAutomesh(list_of_surfaces, file)
 
 # Equivalence of the desired nodes
-equivalence.MeshEquivalence(Assembly_Upper_Skin.components_name,
-                            Assembly_Upper_Stringers.components_name,
-                            0.1, file)
+equivalence.MeshEquivalence(0.01, file,
+                            Assembly_Upper_Skin.components_name,
+                            Assembly_Upper_Stringers.components_name)
+equivalence.MeshEquivalence(0.01, file,
+                            Assembly_Lower_Skin.components_name,
+                            Assembly_Lower_Stringers.components_name)
+equivalence.MeshEquivalence(0.01, file,
+                            Assembly_Main_Rib.components_name,
+                            Assembly_Rib_Caps.components_name,
+                            Assembly_Rib_Stiffeners.components_name,)
+equivalence.MeshEquivalence(
+    0.01, file,
+    Assembly_Main_Rib.components_name,
+    [item for sublist in
+     [AssemblyClass.components_name for AssemblyClass in Assembly_Spars]
+     for item in sublist]
+    )
+equivalence.MeshEquivalence(
+    0.01, file,
+    [item for sublist in
+     [AssemblyClass.components_name for AssemblyClass in Assembly_Spar_Caps]
+     for item in sublist],
+    [item for sublist in
+     [AssemblyClass.components_name for AssemblyClass in Assembly_Spars]
+     for item in sublist]
+    )
 
 # Save the file and close
 # file.write("*writefile \"C:/Users/efilippo/Documents/"
