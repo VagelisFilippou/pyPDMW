@@ -1,5 +1,5 @@
 class AssemblyClass:
-    def __init__(self, counter, name, components, file):
+    def __init__(self, counter, name, components, file, n_vector):
         self.id = counter
         self.name = name
         self.components = components
@@ -7,6 +7,7 @@ class AssemblyClass:
         self.components_name = [ComponentClass.name for ComponentClass in components]
 
         self.write_tcl(file)
+        self.adjust_normals(file, n_vector)
 
     def write_tcl(self, file):
         file.write(
@@ -19,6 +20,12 @@ class AssemblyClass:
         file.write(cmd + str_ids + '}')
         file.write(
             '\n*endnotehistorystate {Modified Components of assembly}\n')
+
+    def adjust_normals(self, file, n_vector):
+        names = ' '.join(f'"{w}"' for w in self.components_name)
+        file.write('\n*createmark components 2 ' + names)
+        file.write('\n*createvector 1 ' + n_vector + '\n')
+        file.write('*normalsadjust2 components 2 3 0 0 0 1 50\n\n')
 
 
 class ComponentClass:
