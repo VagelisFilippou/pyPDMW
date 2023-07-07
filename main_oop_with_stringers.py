@@ -57,7 +57,7 @@ parameters = Parameters(
     0.37,   # Yehudi break normalized
     3,      # Number of spars
     3,      # Number of central ribs
-    5,     # Number of ribs from fuselage till yehudi break
+    5,      # Number of ribs from fuselage till yehudi break
     10,     # Number of ribs from yehudi break till semi-span
     0.15,   # front spar position
     0.75,   # rear spar position
@@ -1278,9 +1278,7 @@ equivalence.MeshEquivalence(
 # Save the file and close
 # file.write("*writefile \"C:/Users/efilippo/Documents/"
 #            "pyPDMW/HM_Files/wing.hm\" 1\n")
-
-file.write("*writefile \"C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
-           "pyPDMW/HM_Files/wing.hm\" 1\n")
+file.write("*writefile \"C:/Users/Evangelos Filippou/PhD_Projects/pyPDMW/HM_Files/wing.hm\" 1\n")
 file.write("return; # Stop script and return to application\n*quit 1;\n")
 
 # Close the file

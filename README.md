@@ -5,6 +5,7 @@ Pieces of software Needed:
 - HyperMesh
 
 Libraries:
+- Intersect (https://pypi.org/project/intersect/)
 - math
 - numpy
 - time

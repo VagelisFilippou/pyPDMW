@@ -26,7 +26,7 @@ def check_path():
     else:
         # Location of HyperMesh in the System (Vagelis PC)
         hm_loc = "C:/Program Files/Altair/2019/hm/bin/win64/hmopengl.exe"
-        path = "C:/Users/Vagelis/Documents/UC3M_Internship/Python/"
+        path = "C:/Users/Evangelos Filippou/PhD_Projects"
         hm_batch = "C:/Program Files/Altair/2019/hm/bin/win64/hmbatch.exe"
     return path, hm_loc, hm_batch
 
@@ -47,5 +47,5 @@ def run_argument(tcl_script):
     """
     path, hm_loc, hm_batch = check_path()
     tcl_script = path + tcl_script
-    arg = hm_batch + " -tcl " + tcl_script
+    arg = hm_loc + " -tcl " + tcl_script
     subprocess.call(arg)

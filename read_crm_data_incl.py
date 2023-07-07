@@ -2,7 +2,7 @@
 A script for the geometry data extraction of the uCRM-9 wing.
 
 Advices:
-- You must have a Resources/uCRM_9/uCRM_9_Airfoil_Data/' path containing
+- You must have a 'resources/uCRM_9/uCRM_9_Airfoil_Data/' path containing
 the airfoil data
 
 """
